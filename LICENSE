@@ -1,0 +1,31 @@
+Business Source License 1.1
+
+License text copyright © 2023 MariaDB Foundation.
+
+Licensor: Jordan Benning
+
+Licensed Work: The Big Screen Club
+
+The Licensor hereby grants you the right to copy, modify, create derivative works, redistribute, and make non-production use of the Licensed Work. The Licensor may make an additional grant of rights to use the Licensed Work in production.
+
+Use Limitation:
+You may not use the Licensed Work for production use, commercial use, or any form of external use intended to provide a service, functionality, or application to a third party.
+
+Change Date: December 31, 2029, unless the Licensor chooses to change this date.
+
+Change License: Apache License, Version 2.0.
+
+After the Change Date, the Licensed Work will be made available under the Change License.
+
+Additional Terms:
+
+You MUST NOT offer the Licensed Work as a hosted or SaaS service.
+
+You MUST NOT use the Licensed Work for any commercial, revenue-generating, or production environment.
+
+You MAY fork, study, modify, and contribute back under the same license.
+
+You MAY request a separate commercial license directly from the Licensor for production or commercial use.
+
+For full license details, see: https://mariadb.com/bsl11/
+
