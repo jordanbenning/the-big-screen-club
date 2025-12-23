@@ -1,0 +1,18 @@
+{
+  "name": "the-big-screen-club",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The Big Screen Club monorepo",
+  "scripts": {
+    "dev": "pnpm --parallel -r dev",
+    "dev:frontend": "pnpm --filter big-screen-club-frontend dev",
+    "dev:backend": "pnpm --filter big-screen-club-backend dev",
+    "build": "pnpm -r build",
+    "build:frontend": "pnpm --filter big-screen-club-frontend build",
+    "build:backend": "pnpm --filter big-screen-club-backend build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
+
