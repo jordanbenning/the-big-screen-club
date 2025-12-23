@@ -1,0 +1,165 @@
+import crypto from 'crypto';
+
+import { PrismaClient } from '@prisma/client';
+import bcrypt from 'bcrypt';
+
+import type { UserResponse } from '../types/auth';
+
+const prisma = new PrismaClient();
+const SALT_ROUNDS = 10;
+const TOKEN_EXPIRY_HOURS = 24;
+
+export class AuthService {
+  async createUser(
+    email: string,
+    password: string,
+    username: string
+  ): Promise<UserResponse> {
+    // Check if user already exists
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username }],
+      },
+    });
+
+    if (existingUser !== null) {
+      if (existingUser.email === email) {
+        throw new Error('Email already in use');
+      }
+      throw new Error('Username already taken');
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        username,
+        isVerified: false,
+      },
+    });
+
+    return this.toUserResponse(user);
+  }
+
+  async generateVerificationToken(userId: string): Promise<string> {
+    // Generate secure random token
+    const token = crypto.randomBytes(32).toString('hex');
+
+    // Calculate expiry time
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + TOKEN_EXPIRY_HOURS);
+
+    // Delete any existing verification tokens for this user
+    await prisma.verificationToken.deleteMany({
+      where: { userId },
+    });
+
+    // Store token in database
+    await prisma.verificationToken.create({
+      data: {
+        token,
+        userId,
+        expiresAt,
+      },
+    });
+
+    return token;
+  }
+
+  async verifyToken(token: string): Promise<UserResponse> {
+    // Find the verification token
+    const verificationToken = await prisma.verificationToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (verificationToken === null) {
+      throw new Error('Invalid verification token');
+    }
+
+    // Check if token has expired
+    if (verificationToken.expiresAt < new Date()) {
+      await prisma.verificationToken.delete({
+        where: { token },
+      });
+      throw new Error('Verification token has expired');
+    }
+
+    // Mark user as verified
+    const user = await prisma.user.update({
+      where: { id: verificationToken.userId },
+      data: { isVerified: true },
+    });
+
+    // Delete the verification token
+    await prisma.verificationToken.delete({
+      where: { token },
+    });
+
+    return this.toUserResponse(user);
+  }
+
+  async authenticateUser(
+    email: string,
+    password: string
+  ): Promise<UserResponse> {
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (user === null) {
+      throw new Error('Invalid email or password');
+    }
+
+    // Check if user is verified
+    if (!user.isVerified) {
+      throw new Error('Please verify your email before logging in');
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new Error('Invalid email or password');
+    }
+
+    return this.toUserResponse(user);
+  }
+
+  async getUserById(userId: string): Promise<UserResponse | null> {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (user === null) {
+      return null;
+    }
+
+    return this.toUserResponse(user);
+  }
+
+  private toUserResponse(user: {
+    id: string;
+    email: string;
+    username: string;
+    isVerified: boolean;
+    createdAt: Date;
+    password: string;
+    updatedAt: Date;
+  }): UserResponse {
+    return {
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      isVerified: user.isVerified,
+      createdAt: user.createdAt,
+    };
+  }
+}
+
+export const authService = new AuthService();

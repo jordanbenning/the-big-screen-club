@@ -2,6 +2,19 @@
 
 A web application for creating movie clubs, suggesting and voting on movies, and comparing ratings.
 
+## Features
+
+### Authentication (Completed)
+
+- ✅ User registration with email verification
+- ✅ Session-based authentication with PostgreSQL session store
+- ✅ Password hashing with bcrypt
+- ✅ Email verification system
+- ✅ Landing page with Sign Up / Log In buttons
+- ✅ Secure session cookies
+- 🚧 Login flow (coming soon)
+- 🚧 Password reset (coming soon)
+
 ## Project Structure
 
 This is a monorepo containing:
@@ -13,11 +26,57 @@ This is a monorepo containing:
 
 This project uses pnpm workspaces for monorepo management.
 
+### Prerequisites
+
+- **Node.js** v20 or higher
+- **PostgreSQL** 14 or higher
+- **pnpm** v10 or higher
+
 ### Install Dependencies
 
 ```bash
 pnpm install --store-dir .pnpm-store
 ```
+
+### Database Setup
+
+1. **Install PostgreSQL** (if not already installed):
+
+   ```bash
+   # macOS (using Homebrew)
+   brew install postgresql@14
+   brew services start postgresql@14
+
+   # Ubuntu/Debian
+   sudo apt-get install postgresql postgresql-contrib
+   sudo systemctl start postgresql
+   ```
+
+2. **Create the database**:
+
+   ```bash
+   # Connect to PostgreSQL
+   psql postgres
+
+   # In PostgreSQL shell, create database and user
+   CREATE DATABASE bigscreenclub;
+   CREATE USER postgres WITH PASSWORD 'postgres';
+   GRANT ALL PRIVILEGES ON DATABASE bigscreenclub TO postgres;
+   \q
+   ```
+
+3. **Configure environment variables**:
+
+   ```bash
+   # Backend environment variables are already set in backend/.env
+   # Update DATABASE_URL if your PostgreSQL credentials differ
+   ```
+
+4. **Run database migrations**:
+   ```bash
+   cd backend
+   npx prisma migrate dev --name init
+   ```
 
 ### Development
 
@@ -39,6 +98,20 @@ pnpm dev:backend
 
 - Frontend runs on `http://localhost:5173` (Vite default)
 - Backend runs on `http://localhost:3000` (Express default)
+
+### Testing Authentication
+
+1. **Start both servers** (backend and frontend)
+2. **Navigate to** `http://localhost:5173`
+3. **Click "Sign Up"** and create an account
+4. **Check the backend console** for the email preview link (using Ethereal Email for development)
+5. **Click the verification link** to verify your email and log in
+
+**Email Service (Development):**
+
+- The app uses Ethereal Email (fake SMTP) for development
+- Email preview links are logged in the backend console
+- For production, configure real SMTP credentials in `backend/.env`
 
 ## Code Quality
 
