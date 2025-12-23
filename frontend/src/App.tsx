@@ -3,8 +3,7 @@ function App() {
     <div>
       <h1>The Big Screen Club</h1>
     </div>
-  )
+  );
 }
 
-export default App
-
+export default App;
