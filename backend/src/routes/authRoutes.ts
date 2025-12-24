@@ -163,7 +163,7 @@ router.post(
   '/login',
   asyncHandler(async (req: Request, res: Response): Promise<void> => {
     try {
-      const { email, password } = req.body as LoginRequest;
+      const { email, password, rememberMe } = req.body as LoginRequest;
 
       // Validate input
       if (email === undefined || password === undefined) {
@@ -176,6 +176,15 @@ router.post(
 
       // Create session
       req.session.userId = user.id;
+
+      // Set cookie expiration based on "Remember Me" preference
+      if (rememberMe === true) {
+        // 30 days if "Remember Me" is checked
+        req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30;
+      } else {
+        // 7 days if "Remember Me" is not checked
+        req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 7;
+      }
 
       const response: LoginResponse = {
         message: 'Login successful',

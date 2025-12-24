@@ -54,7 +54,7 @@ function LoginForm() {
 
     void (async () => {
       try {
-        const response = await authApi.login(formData);
+        const response = await authApi.login({ ...formData, rememberMe });
 
         // Update auth context with user data
         login(response.user);
