@@ -34,12 +34,6 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-model Session {
-  id        String   @id
-  sid       String   @unique
-  data      String
-  expiresAt DateTime
-
-  @@map("sessions")
-}
+// Note: Session table is managed by connect-pg-simple library
+// It will be created automatically with the correct schema
 

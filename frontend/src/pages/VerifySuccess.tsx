@@ -4,7 +4,7 @@ function VerifySuccess() {
   const navigate = useNavigate();
 
   const handleGoToDashboard = () => {
-    void navigate('/');
+    void navigate('/dashboard');
   };
 
   return (

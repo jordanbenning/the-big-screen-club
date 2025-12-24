@@ -33,8 +33,20 @@ export const authApi = {
     await api.post('/api/auth/logout');
   },
 
-  async getCurrentUser(): Promise<User> {
-    const response = await api.get<{ user: User }>('/api/auth/me');
+  async getCurrentUser(): Promise<User | null> {
+    const response = await api.get<{ user: User }>('/api/auth/me', {
+      validateStatus: (status) => {
+        // Treat both 200 and 401 as valid responses (not errors)
+        return status === 200 || status === 401;
+      },
+    });
+
+    // If 401, user is not authenticated
+    if (response.status === 401) {
+      return null;
+    }
+
+    // If 200, return the user data
     return response.data.user;
   },
 };

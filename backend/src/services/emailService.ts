@@ -54,8 +54,8 @@ class EmailService {
       throw new Error('Email transporter not initialized');
     }
 
-    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173';
-    const verificationUrl = `${frontendUrl}/verify?token=${token}`;
+    const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:3000';
+    const verificationUrl = `${backendUrl}/api/auth/verify/${token}`;
 
     const info = await this.transporter.sendMail({
       from: '"The Big Screen Club" <noreply@bigscreenclub.com>',
