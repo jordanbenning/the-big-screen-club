@@ -11,6 +11,7 @@ interface AuthContextType {
   // eslint-disable-next-line no-unused-vars
   login: (user: User) => void;
   logout: () => Promise<void>;
+  clearUser: () => void;
   checkAuth: () => Promise<void>;
 }
 
@@ -54,12 +55,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const clearUser = () => {
+    setUser(null);
+    sessionHelper.markLoggedOut();
+  };
+
   const value: AuthContextType = {
     user,
     isAuthenticated: user !== null,
     isLoading,
     login,
     logout,
+    clearUser,
     checkAuth,
   };
 

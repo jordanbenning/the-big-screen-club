@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 function Dashboard() {
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user, logout, clearUser } = useAuth();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -36,12 +36,12 @@ function Dashboard() {
       try {
         await authApi.deleteAccount(deletePassword);
         // Account deleted successfully
-        // Clear auth state (similar to logout)
-        await logout();
-        // Clear remember me preference
+        // Session is already destroyed on the backend, so just clear local state
+        // Don't call logout() as it would make an API call that would fail
         localStorage.removeItem('rememberMe');
-        // Redirect to landing page
-        void navigate('/');
+        clearUser();
+        // Use window.location for a hard redirect to ensure clean state
+        window.location.href = '/';
       } catch (err) {
         if (err instanceof Error && 'response' in err) {
           const axiosError = err as {

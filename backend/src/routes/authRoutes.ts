@@ -417,14 +417,15 @@ router.delete(
       // Delete account
       const result = await authService.deleteAccount(userId, password);
 
-      // Destroy session
+      // Destroy session and send response after session is destroyed
       req.session.destroy((err) => {
         if (err !== undefined && err !== null) {
           console.error('Session destroy error:', err);
+          res.status(500).json({ error: 'Failed to delete account' });
+          return;
         }
+        res.status(200).json(result);
       });
-
-      res.status(200).json(result);
     } catch (error) {
       if (error instanceof Error) {
         if (error.message === 'Invalid password') {
