@@ -39,8 +39,7 @@ function LoginForm() {
   };
 
   const handleForgotPassword = () => {
-    // eslint-disable-next-line no-alert
-    window.alert('Password reset functionality coming soon!');
+    void navigate('/forgot-password');
   };
 
   const handleSubmit = (e: React.FormEvent) => {

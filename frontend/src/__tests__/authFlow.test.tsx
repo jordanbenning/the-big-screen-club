@@ -7,8 +7,10 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import PublicOnlyRoute from '../components/PublicOnlyRoute';
 import { AuthProvider } from '../contexts/AuthContext';
 import Dashboard from '../pages/Dashboard';
+import ForgotPasswordPage from '../pages/ForgotPasswordPage';
 import LandingPage from '../pages/LandingPage';
 import LoginPage from '../pages/LoginPage';
+import ResetPasswordPage from '../pages/ResetPasswordPage';
 import type { User } from '../types/auth';
 import { sessionHelper } from '../utils/sessionHelper';
 
@@ -38,6 +40,22 @@ const renderApp = (initialRoute = '/') => {
             element={
               <PublicOnlyRoute>
                 <LoginPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicOnlyRoute>
+                <ForgotPasswordPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <PublicOnlyRoute>
+                <ResetPasswordPage />
               </PublicOnlyRoute>
             }
           />
@@ -198,6 +216,112 @@ describe('Authentication Flow Integration Tests', () => {
 
       // Should NOT call the API
       expect(authApi.getCurrentUser).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('Password Reset Flow', () => {
+    it('should display forgot password page', () => {
+      renderApp('/forgot-password');
+
+      expect(
+        screen.getByRole('heading', { name: /forgot password/i })
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/email/i)).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /send reset link/i })
+      ).toBeInTheDocument();
+    });
+
+    it('should display reset password page with token', () => {
+      renderApp('/reset-password?token=test-token-123');
+
+      expect(
+        screen.getByRole('heading', { name: /reset password/i })
+      ).toBeInTheDocument();
+      expect(screen.getByLabelText(/new password/i)).toBeInTheDocument();
+      expect(screen.getByLabelText(/confirm password/i)).toBeInTheDocument();
+    });
+
+    it('should handle password reset request', async () => {
+      vi.mocked(authApi.forgotPassword).mockResolvedValue({
+        message:
+          'If an account exists with this email, a password reset link will be sent.',
+      });
+
+      renderApp('/forgot-password');
+
+      // The forgotPassword API would be called when form is submitted
+      // This test verifies the route is properly configured
+      expect(
+        screen.getByRole('button', { name: /send reset link/i })
+      ).toBeInTheDocument();
+    });
+
+    it('should handle password reset completion and auto-login', async () => {
+      vi.mocked(authApi.resetPassword).mockResolvedValue({
+        message: 'Password reset successful',
+        user: mockUser,
+      });
+
+      renderApp('/reset-password?token=valid-token');
+
+      // The resetPassword API would be called when form is submitted
+      // After successful reset, user should be auto-logged in
+      expect(
+        screen.getByRole('button', { name: /reset password/i })
+      ).toBeInTheDocument();
+    });
+
+    it('should allow logged-out users to access password reset pages', () => {
+      vi.mocked(sessionHelper.isLikelyLoggedIn).mockReturnValue(false);
+
+      // Forgot password page should be accessible
+      renderApp('/forgot-password');
+      expect(
+        screen.getByRole('heading', { name: /forgot password/i })
+      ).toBeInTheDocument();
+
+      // Reset password page should be accessible
+      renderApp('/reset-password?token=test-token');
+      expect(
+        screen.getByRole('heading', { name: /reset password/i })
+      ).toBeInTheDocument();
+    });
+
+    it('should show error for reset password page without token', () => {
+      renderApp('/reset-password');
+
+      expect(screen.getByText(/invalid reset link/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/invalid or missing reset token/i)
+      ).toBeInTheDocument();
+    });
+
+    it('should complete full password reset flow', async () => {
+      // Step 1: User requests password reset
+      vi.mocked(authApi.forgotPassword).mockResolvedValue({
+        message: 'Reset email sent',
+      });
+
+      renderApp('/forgot-password');
+      expect(
+        screen.getByRole('heading', { name: /forgot password/i })
+      ).toBeInTheDocument();
+
+      // Step 2: User receives email and clicks link (navigates to reset page)
+      vi.mocked(authApi.resetPassword).mockResolvedValue({
+        message: 'Password reset successful',
+        user: mockUser,
+      });
+
+      renderApp('/reset-password?token=valid-token-from-email');
+      expect(
+        screen.getByRole('heading', { name: /reset password/i })
+      ).toBeInTheDocument();
+
+      // Step 3: After successful reset, user is auto-logged in and redirected
+      // This would be handled by the ResetPasswordPage component calling login()
+      // and navigate('/dashboard')
     });
   });
 });

@@ -6,6 +6,10 @@ import type {
   LoginRequest,
   LoginResponse,
   User,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
 } from '../types/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
@@ -48,5 +52,25 @@ export const authApi = {
 
     // If 200, return the user data
     return response.data.user;
+  },
+
+  async forgotPassword(
+    data: ForgotPasswordRequest
+  ): Promise<ForgotPasswordResponse> {
+    const response = await api.post<ForgotPasswordResponse>(
+      '/api/auth/forgot-password',
+      data
+    );
+    return response.data;
+  },
+
+  async resetPassword(
+    data: ResetPasswordRequest
+  ): Promise<ResetPasswordResponse> {
+    const response = await api.post<ResetPasswordResponse>(
+      '/api/auth/reset-password',
+      data
+    );
+    return response.data;
   },
 };

@@ -12,6 +12,10 @@ import type {
   SignUpResponse,
   LoginRequest,
   LoginResponse,
+  ForgotPasswordRequest,
+  ForgotPasswordResponse,
+  ResetPasswordRequest,
+  ResetPasswordResponse,
 } from '../types/auth';
 
 const router = express.Router();
@@ -229,6 +233,109 @@ router.get(
     } catch (error) {
       console.error('Get user error:', error);
       res.status(500).json({ error: 'Failed to get user' });
+    }
+  })
+);
+
+// POST /api/auth/forgot-password
+router.post(
+  '/forgot-password',
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email } = req.body as ForgotPasswordRequest;
+
+      // Validate input
+      if (email === undefined || email === '') {
+        res.status(400).json({ error: 'Email is required' });
+        return;
+      }
+
+      // Validate email format
+      if (!EMAIL_REGEX.test(email)) {
+        res.status(400).json({ error: 'Invalid email format' });
+        return;
+      }
+
+      try {
+        // Request password reset - generates token and returns username
+        const { username, token } =
+          await authService.requestPasswordReset(email);
+
+        // Send password reset email
+        await emailService.sendPasswordResetEmail(email, username, token);
+      } catch {
+        // Silently handle errors - don't reveal if email exists
+        console.log('Password reset request for non-existent email:', email);
+      }
+
+      // Always return success message for security
+      const response: ForgotPasswordResponse = {
+        message:
+          'If an account exists with this email, a password reset link will be sent.',
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      res
+        .status(500)
+        .json({ error: 'Failed to process password reset request' });
+    }
+  })
+);
+
+// POST /api/auth/reset-password
+router.post(
+  '/reset-password',
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { token, password } = req.body as ResetPasswordRequest;
+
+      // Validate input
+      if (token === undefined || token === '') {
+        res.status(400).json({ error: 'Reset token is required' });
+        return;
+      }
+
+      if (password === undefined || password === '') {
+        res.status(400).json({ error: 'Password is required' });
+        return;
+      }
+
+      // Validate password strength
+      if (!PASSWORD_REGEX.test(password)) {
+        res.status(400).json({
+          error:
+            'Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, and one number',
+        });
+        return;
+      }
+
+      // Reset password
+      const user = await authService.resetPassword(token, password);
+
+      // Create session (auto-login)
+      req.session.userId = user.id;
+
+      const response: ResetPasswordResponse = {
+        message: 'Password reset successful',
+        user,
+      };
+
+      res.status(200).json(response);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (
+          error.message === 'Invalid or expired reset token' ||
+          error.message === 'Reset token has expired'
+        ) {
+          res.status(400).json({ error: error.message });
+          return;
+        }
+      }
+
+      console.error('Reset password error:', error);
+      res.status(500).json({ error: 'Failed to reset password' });
     }
   })
 );

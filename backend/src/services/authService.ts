@@ -143,6 +143,88 @@ export class AuthService {
     return this.toUserResponse(user);
   }
 
+  async requestPasswordReset(
+    email: string
+  ): Promise<{ username: string; token: string }> {
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    // Don't reveal if user exists for security
+    if (user === null) {
+      throw new Error(
+        'If an account exists with this email, a password reset link will be sent.'
+      );
+    }
+
+    // Generate secure random token
+    const token = crypto.randomBytes(32).toString('hex');
+
+    // Calculate expiry time
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + TOKEN_EXPIRY_HOURS);
+
+    // Delete any existing tokens for this user (both verification and reset)
+    await prisma.verificationToken.deleteMany({
+      where: { userId: user.id },
+    });
+
+    // Store token in database
+    await prisma.verificationToken.create({
+      data: {
+        token,
+        userId: user.id,
+        expiresAt,
+      },
+    });
+
+    return { username: user.username, token };
+  }
+
+  async resetPassword(
+    token: string,
+    newPassword: string
+  ): Promise<UserResponse> {
+    // Find the reset token
+    const resetToken = await prisma.verificationToken.findUnique({
+      where: { token },
+      include: { user: true },
+    });
+
+    if (resetToken === null) {
+      throw new Error('Invalid or expired reset token');
+    }
+
+    // Check if token has expired
+    if (resetToken.expiresAt < new Date()) {
+      await prisma.verificationToken.delete({
+        where: { token },
+      });
+      throw new Error('Reset token has expired');
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+    // Update user's password and mark as verified
+    // (they proved email access by using the reset token)
+    const user = await prisma.user.update({
+      where: { id: resetToken.userId },
+      data: {
+        password: hashedPassword,
+        isVerified: true,
+      },
+    });
+
+    // Delete the reset token (one-time use)
+    await prisma.verificationToken.delete({
+      where: { token },
+    });
+
+    return this.toUserResponse(user);
+  }
+
   private toUserResponse(user: {
     id: string;
     email: string;
