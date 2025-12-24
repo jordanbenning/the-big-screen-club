@@ -1,10 +1,16 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { authApi } from '../api/authApi';
 import { useAuth } from '../contexts/AuthContext';
 
 function Dashboard() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   const handleLogout = () => {
     void (async () => {
@@ -18,6 +24,37 @@ function Dashboard() {
         console.error('Logout failed:', err);
         // eslint-disable-next-line no-alert
         window.alert('Logout failed. Please try again.');
+      }
+    })();
+  };
+
+  const handleDeleteAccount = () => {
+    setDeleteLoading(true);
+    setDeleteError(null);
+
+    void (async () => {
+      try {
+        await authApi.deleteAccount(deletePassword);
+        // Account deleted successfully
+        // Clear auth state (similar to logout)
+        await logout();
+        // Clear remember me preference
+        localStorage.removeItem('rememberMe');
+        // Redirect to landing page
+        void navigate('/');
+      } catch (err) {
+        if (err instanceof Error && 'response' in err) {
+          const axiosError = err as {
+            response?: { data?: { error?: string } };
+          };
+          setDeleteError(
+            axiosError.response?.data?.error ?? 'Failed to delete account'
+          );
+        } else {
+          setDeleteError('Failed to delete account');
+        }
+      } finally {
+        setDeleteLoading(false);
       }
     })();
   };
@@ -128,7 +165,170 @@ function Dashboard() {
               tuned!
             </p>
           </div>
+
+          {/* Delete Account Section */}
+          <div
+            style={{
+              marginTop: '30px',
+              padding: '20px',
+              backgroundColor: '#fff5f5',
+              borderRadius: '8px',
+              border: '1px solid #feb2b2',
+            }}
+          >
+            <h3 style={{ marginTop: 0, color: '#c53030' }}>⚠️ Danger Zone</h3>
+            <p style={{ color: '#742a2a', marginBottom: '15px' }}>
+              Once you delete your account, there is no going back. This action
+              cannot be undone.
+            </p>
+            <button
+              onClick={() => {
+                setShowDeleteModal(true);
+              }}
+              style={{
+                padding: '10px 20px',
+                fontSize: '1rem',
+                backgroundColor: '#dc3545',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+              }}
+            >
+              Delete Account
+            </button>
+          </div>
         </>
+      )}
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              padding: '30px',
+              borderRadius: '8px',
+              maxWidth: '500px',
+              width: '90%',
+            }}
+          >
+            <h2 style={{ marginTop: 0, color: '#c53030' }}>Delete Account?</h2>
+            <p style={{ color: '#666', marginBottom: '20px' }}>
+              This action cannot be undone. All your data will be permanently
+              deleted. Please enter your password to confirm.
+            </p>
+
+            <div style={{ marginBottom: '20px' }}>
+              <label
+                htmlFor="deletePassword"
+                style={{
+                  display: 'block',
+                  marginBottom: '5px',
+                  fontWeight: 'bold',
+                }}
+              >
+                Password
+              </label>
+              <input
+                type="password"
+                id="deletePassword"
+                value={deletePassword}
+                onChange={(e) => {
+                  setDeletePassword(e.target.value);
+                  setDeleteError(null);
+                }}
+                placeholder="Enter your password"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  fontSize: '1rem',
+                  border: '1px solid #ccc',
+                  borderRadius: '5px',
+                }}
+              />
+            </div>
+
+            {deleteError !== null && (
+              <div
+                style={{
+                  padding: '12px',
+                  backgroundColor: '#fee',
+                  color: '#c33',
+                  borderRadius: '5px',
+                  marginBottom: '20px',
+                }}
+              >
+                {deleteError}
+              </div>
+            )}
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'flex-end',
+              }}
+            >
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setDeletePassword('');
+                  setDeleteError(null);
+                }}
+                disabled={deleteLoading}
+                style={{
+                  padding: '10px 20px',
+                  fontSize: '1rem',
+                  backgroundColor: '#6c757d',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: deleteLoading ? 'not-allowed' : 'pointer',
+                  fontWeight: 'bold',
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading || deletePassword.trim() === ''}
+                style={{
+                  padding: '10px 20px',
+                  fontSize: '1rem',
+                  backgroundColor:
+                    deleteLoading || deletePassword.trim() === ''
+                      ? '#ccc'
+                      : '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor:
+                    deleteLoading || deletePassword.trim() === ''
+                      ? 'not-allowed'
+                      : 'pointer',
+                  fontWeight: 'bold',
+                }}
+              >
+                {deleteLoading ? 'Deleting...' : 'Delete My Account'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

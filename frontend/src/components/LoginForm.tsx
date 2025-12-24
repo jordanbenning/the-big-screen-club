@@ -15,6 +15,9 @@ function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [showResendVerification, setShowResendVerification] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -23,10 +26,9 @@ function LoginForm() {
   };
 
   const validateForm = (): boolean => {
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(formData.email)) {
-      setError('Invalid email format');
+    // Simple validation - just check if fields are not empty
+    if (formData.email.trim() === '') {
+      setError('Email or username is required');
       return false;
     }
 
@@ -40,6 +42,33 @@ function LoginForm() {
 
   const handleForgotPassword = () => {
     void navigate('/forgot-password');
+  };
+
+  const handleResendVerification = () => {
+    setResendLoading(true);
+    setResendSuccess(false);
+
+    void (async () => {
+      try {
+        await authApi.resendVerification(formData.email);
+        setResendSuccess(true);
+        setError(null);
+      } catch (err) {
+        if (err instanceof Error && 'response' in err) {
+          const axiosError = err as {
+            response?: { data?: { error?: string } };
+          };
+          setError(
+            axiosError.response?.data?.error ??
+              'Failed to resend verification email'
+          );
+        } else {
+          setError('Failed to resend verification email');
+        }
+      } finally {
+        setResendLoading(false);
+      }
+    })();
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -73,9 +102,22 @@ function LoginForm() {
           const axiosError = err as {
             response?: { data?: { error?: string } };
           };
-          setError(axiosError.response?.data?.error ?? 'Login failed');
+          const errorMessage =
+            axiosError.response?.data?.error ?? 'Login failed';
+          setError(errorMessage);
+
+          // Show resend verification button if email is not verified
+          if (
+            errorMessage === 'Please verify your email before logging in' &&
+            formData.email !== ''
+          ) {
+            setShowResendVerification(true);
+          } else {
+            setShowResendVerification(false);
+          }
         } else {
           setError('Login failed');
+          setShowResendVerification(false);
         }
       } finally {
         setLoading(false);
@@ -100,15 +142,16 @@ function LoginForm() {
               fontWeight: 'bold',
             }}
           >
-            Email
+            Email or Username
           </label>
           <input
-            type="email"
+            type="text"
             id="email"
             name="email"
             value={formData.email}
             onChange={handleChange}
             required
+            placeholder="Enter your email or username"
             style={{
               width: '100%',
               padding: '12px',
@@ -204,6 +247,42 @@ function LoginForm() {
           >
             {error}
           </div>
+        )}
+
+        {resendSuccess && (
+          <div
+            style={{
+              padding: '12px',
+              backgroundColor: '#e7f5e7',
+              color: '#2d6e2d',
+              borderRadius: '5px',
+              marginBottom: '20px',
+            }}
+          >
+            Verification email sent! Please check your inbox.
+          </div>
+        )}
+
+        {showResendVerification && (
+          <button
+            type="button"
+            onClick={handleResendVerification}
+            disabled={resendLoading}
+            style={{
+              width: '100%',
+              padding: '12px',
+              fontSize: '1rem',
+              backgroundColor: resendLoading ? '#ccc' : '#28a745',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: resendLoading ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold',
+              marginBottom: '15px',
+            }}
+          >
+            {resendLoading ? 'Sending...' : 'Resend Verification Email'}
+          </button>
         )}
 
         <button

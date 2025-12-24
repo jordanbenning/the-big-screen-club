@@ -73,4 +73,20 @@ export const authApi = {
     );
     return response.data;
   },
+
+  async resendVerification(email: string): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>(
+      '/api/auth/resend-verification',
+      { email }
+    );
+    return response.data;
+  },
+
+  async deleteAccount(password: string): Promise<{ message: string }> {
+    const response = await api.delete<{ message: string }>(
+      '/api/auth/account',
+      { data: { password } }
+    );
+    return response.data;
+  },
 };

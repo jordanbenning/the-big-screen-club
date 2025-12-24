@@ -104,16 +104,21 @@ export class AuthService {
   }
 
   async authenticateUser(
-    email: string,
+    emailOrUsername: string,
     password: string
   ): Promise<UserResponse> {
-    // Find user by email
-    const user = await prisma.user.findUnique({
-      where: { email },
+    // Determine if input is email (contains @) or username
+    const isEmail = emailOrUsername.includes('@');
+
+    // Find user by email or username
+    const user = await prisma.user.findFirst({
+      where: isEmail
+        ? { email: emailOrUsername }
+        : { username: emailOrUsername },
     });
 
     if (user === null) {
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid credentials');
     }
 
     // Check if user is verified
@@ -125,7 +130,7 @@ export class AuthService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
+      throw new Error('Invalid credentials');
     }
 
     return this.toUserResponse(user);
@@ -223,6 +228,57 @@ export class AuthService {
     });
 
     return this.toUserResponse(user);
+  }
+
+  async resendVerificationEmail(
+    email: string
+  ): Promise<{ username: string; token: string }> {
+    // Find user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (user === null) {
+      throw new Error('User not found');
+    }
+
+    // Check if user is already verified
+    if (user.isVerified) {
+      throw new Error('Email is already verified');
+    }
+
+    // Generate new verification token (this will delete any existing tokens)
+    const token = await this.generateVerificationToken(user.id);
+
+    return { username: user.username, token };
+  }
+
+  async deleteAccount(
+    userId: string,
+    password: string
+  ): Promise<{ message: string }> {
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (user === null) {
+      throw new Error('User not found');
+    }
+
+    // Verify password for security
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new Error('Invalid password');
+    }
+
+    // Delete user (cascade will handle verification tokens)
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return { message: 'Account deleted successfully' };
   }
 
   private toUserResponse(user: {

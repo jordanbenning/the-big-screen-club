@@ -167,11 +167,13 @@ router.post(
 
       // Validate input
       if (email === undefined || password === undefined) {
-        res.status(400).json({ error: 'Email and password are required' });
+        res
+          .status(400)
+          .json({ error: 'Email/username and password are required' });
         return;
       }
 
-      // Authenticate user
+      // Authenticate user (now accepts email OR username)
       const user = await authService.authenticateUser(email, password);
 
       // Create session
@@ -195,7 +197,7 @@ router.post(
     } catch (error) {
       if (error instanceof Error) {
         if (
-          error.message === 'Invalid email or password' ||
+          error.message === 'Invalid credentials' ||
           error.message === 'Please verify your email before logging in'
         ) {
           res.status(401).json({ error: error.message });
@@ -345,6 +347,94 @@ router.post(
 
       console.error('Reset password error:', error);
       res.status(500).json({ error: 'Failed to reset password' });
+    }
+  })
+);
+
+// POST /api/auth/resend-verification
+router.post(
+  '/resend-verification',
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { email } = req.body as { email: string };
+
+      // Validate input
+      if (email === undefined || email === '') {
+        res.status(400).json({ error: 'Email is required' });
+        return;
+      }
+
+      // Validate email format
+      if (!EMAIL_REGEX.test(email)) {
+        res.status(400).json({ error: 'Invalid email format' });
+        return;
+      }
+
+      // Resend verification email
+      const { username, token } =
+        await authService.resendVerificationEmail(email);
+      await emailService.sendVerificationEmail(email, username, token);
+
+      res.status(200).json({
+        message: 'Verification email sent! Please check your inbox.',
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'User not found') {
+          // Don't reveal if user exists for security
+          res.status(200).json({
+            message: 'Verification email sent! Please check your inbox.',
+          });
+          return;
+        }
+        if (error.message === 'Email is already verified') {
+          res.status(400).json({ error: 'Email is already verified' });
+          return;
+        }
+      }
+
+      console.error('Resend verification error:', error);
+      res.status(500).json({ error: 'Failed to resend verification email' });
+    }
+  })
+);
+
+// DELETE /api/auth/account
+router.delete(
+  '/account',
+  requireAuth,
+  asyncHandler(async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { password } = req.body as { password: string };
+      const userId = (req as Request & { user: { id: string } }).user.id;
+
+      // Validate input
+      if (password === undefined || password === '') {
+        res.status(400).json({ error: 'Password is required' });
+        return;
+      }
+
+      // Delete account
+      const result = await authService.deleteAccount(userId, password);
+
+      // Destroy session
+      req.session.destroy((err) => {
+        if (err !== undefined && err !== null) {
+          console.error('Session destroy error:', err);
+        }
+      });
+
+      res.status(200).json(result);
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Invalid password') {
+          res.status(401).json({ error: 'Invalid password' });
+          return;
+        }
+      }
+
+      console.error('Delete account error:', error);
+      res.status(500).json({ error: 'Failed to delete account' });
     }
   })
 );
