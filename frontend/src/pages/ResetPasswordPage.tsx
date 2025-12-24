@@ -1,104 +1,104 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { authApi } from '../api/authApi';
-import { useAuth } from '../contexts/AuthContext';
-import type { ResetPasswordRequest } from '../types/auth';
+import { authApi } from '../api/authApi'
+import { useAuth } from '../contexts/AuthContext'
+import type { ResetPasswordRequest } from '../types/auth'
 
 function ResetPasswordPage() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { login } = useAuth();
-  const [token, setToken] = useState<string | null>(null);
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const { login } = useAuth()
+  const [token, setToken] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: '',
-  });
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  })
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const tokenParam = searchParams.get('token');
+    const tokenParam = searchParams.get('token')
     if (tokenParam === null || tokenParam === '') {
-      setError('Invalid or missing reset token');
+      setError('Invalid or missing reset token')
     } else {
-      setToken(tokenParam);
+      setToken(tokenParam)
     }
-  }, [searchParams]);
+  }, [searchParams])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setError(null);
-  };
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    setError(null)
+  }
 
   const validateForm = (): boolean => {
     // Password strength validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
     if (!passwordRegex.test(formData.password)) {
       setError(
         'Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, and one number'
-      );
-      return false;
+      )
+      return false
     }
 
     // Confirm password match
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return false;
+      setError('Passwords do not match')
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
     if (token === null) {
-      setError('Invalid or missing reset token');
-      return;
+      setError('Invalid or missing reset token')
+      return
     }
 
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     void (async () => {
       try {
         const data: ResetPasswordRequest = {
           token,
           password: formData.password,
-        };
-        const response = await authApi.resetPassword(data);
+        }
+        const response = await authApi.resetPassword(data)
 
         // Auto-login: update auth context with user data
-        login(response.user);
+        login(response.user)
 
         // Redirect to dashboard
-        void navigate('/dashboard');
+        void navigate('/dashboard')
       } catch (err) {
         if (err instanceof Error && 'response' in err) {
           const axiosError = err as {
-            response?: { data?: { error?: string } };
-          };
+            response?: { data?: { error?: string } }
+          }
           setError(
             axiosError.response?.data?.error ?? 'Failed to reset password'
-          );
+          )
         } else {
-          setError('Failed to reset password');
+          setError('Failed to reset password')
         }
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    })();
-  };
+    })()
+  }
 
   const handleBackToLogin = () => {
-    void navigate('/login');
-  };
+    void navigate('/login')
+  }
 
   // Show error state if no token
   if (token === null && error !== null) {
@@ -134,7 +134,7 @@ function ResetPasswordPage() {
           Back to Login
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -257,7 +257,7 @@ function ResetPasswordPage() {
         </button>
       </form>
     </div>
-  );
+  )
 }
 
-export default ResetPasswordPage;
+export default ResetPasswordPage

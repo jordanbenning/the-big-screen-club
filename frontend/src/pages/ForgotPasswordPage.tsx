@@ -1,67 +1,67 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { authApi } from '../api/authApi';
-import type { ForgotPasswordRequest } from '../types/auth';
+import { authApi } from '../api/authApi'
+import type { ForgotPasswordRequest } from '../types/auth'
 
 function ForgotPasswordPage() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setEmail(e.target.value);
-    setError(null);
-  };
+    setEmail(e.target.value)
+    setError(null)
+  }
 
   const validateForm = (): boolean => {
     // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      setError('Invalid email format');
-      return false;
+      setError('Invalid email format')
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     void (async () => {
       try {
-        const data: ForgotPasswordRequest = { email };
-        await authApi.forgotPassword(data);
-        setSuccess(true);
+        const data: ForgotPasswordRequest = { email }
+        await authApi.forgotPassword(data)
+        setSuccess(true)
       } catch (err) {
         if (err instanceof Error && 'response' in err) {
           const axiosError = err as {
-            response?: { data?: { error?: string } };
-          };
+            response?: { data?: { error?: string } }
+          }
           setError(
             axiosError.response?.data?.error ?? 'Failed to send reset email'
-          );
+          )
         } else {
-          setError('Failed to send reset email');
+          setError('Failed to send reset email')
         }
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    })();
-  };
+    })()
+  }
 
   const handleBackToLogin = () => {
-    void navigate('/login');
-  };
+    void navigate('/login')
+  }
 
   if (success) {
     return (
@@ -108,7 +108,7 @@ function ForgotPasswordPage() {
           Back to Login
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -200,7 +200,7 @@ function ForgotPasswordPage() {
         </button>
       </form>
     </div>
-  );
+  )
 }
 
-export default ForgotPasswordPage;
+export default ForgotPasswordPage

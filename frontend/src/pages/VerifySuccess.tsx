@@ -1,11 +1,11 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 function VerifySuccess() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleGoToDashboard = () => {
-    void navigate('/dashboard');
-  };
+    void navigate('/dashboard')
+  }
 
   return (
     <div
@@ -37,7 +37,7 @@ function VerifySuccess() {
         Go to Dashboard
       </button>
     </div>
-  );
+  )
 }
 
-export default VerifySuccess;
+export default VerifySuccess

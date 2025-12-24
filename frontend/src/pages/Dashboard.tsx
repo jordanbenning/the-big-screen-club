@@ -1,63 +1,63 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { authApi } from '../api/authApi';
-import { useAuth } from '../contexts/AuthContext';
+import { authApi } from '../api/authApi'
+import { useAuth } from '../contexts/AuthContext'
 
 function Dashboard() {
-  const navigate = useNavigate();
-  const { user, logout, clearUser } = useAuth();
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [deletePassword, setDeletePassword] = useState('');
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
+  const navigate = useNavigate()
+  const { user, logout, clearUser } = useAuth()
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deletePassword, setDeletePassword] = useState('')
+  const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const handleLogout = () => {
     void (async () => {
       try {
-        await logout();
+        await logout()
         // Clear remember me preference
-        localStorage.removeItem('rememberMe');
+        localStorage.removeItem('rememberMe')
         // Redirect to landing page
-        void navigate('/');
+        void navigate('/')
       } catch (err) {
-        console.error('Logout failed:', err);
+        console.error('Logout failed:', err)
         // eslint-disable-next-line no-alert
-        window.alert('Logout failed. Please try again.');
+        window.alert('Logout failed. Please try again.')
       }
-    })();
-  };
+    })()
+  }
 
   const handleDeleteAccount = () => {
-    setDeleteLoading(true);
-    setDeleteError(null);
+    setDeleteLoading(true)
+    setDeleteError(null)
 
     void (async () => {
       try {
-        await authApi.deleteAccount(deletePassword);
+        await authApi.deleteAccount(deletePassword)
         // Account deleted successfully
         // Session is already destroyed on the backend, so just clear local state
         // Don't call logout() as it would make an API call that would fail
-        localStorage.removeItem('rememberMe');
-        clearUser();
+        localStorage.removeItem('rememberMe')
+        clearUser()
         // Use window.location for a hard redirect to ensure clean state
-        window.location.href = '/';
+        window.location.href = '/'
       } catch (err) {
         if (err instanceof Error && 'response' in err) {
           const axiosError = err as {
-            response?: { data?: { error?: string } };
-          };
+            response?: { data?: { error?: string } }
+          }
           setDeleteError(
             axiosError.response?.data?.error ?? 'Failed to delete account'
-          );
+          )
         } else {
-          setDeleteError('Failed to delete account');
+          setDeleteError('Failed to delete account')
         }
       } finally {
-        setDeleteLoading(false);
+        setDeleteLoading(false)
       }
-    })();
-  };
+    })()
+  }
 
   // User data comes from AuthContext, no need for loading or error states
   // ProtectedRoute already handles authentication check
@@ -183,7 +183,7 @@ function Dashboard() {
             </p>
             <button
               onClick={() => {
-                setShowDeleteModal(true);
+                setShowDeleteModal(true)
               }}
               style={{
                 padding: '10px 20px',
@@ -249,8 +249,8 @@ function Dashboard() {
                 id="deletePassword"
                 value={deletePassword}
                 onChange={(e) => {
-                  setDeletePassword(e.target.value);
-                  setDeleteError(null);
+                  setDeletePassword(e.target.value)
+                  setDeleteError(null)
                 }}
                 placeholder="Enter your password"
                 style={{
@@ -286,9 +286,9 @@ function Dashboard() {
             >
               <button
                 onClick={() => {
-                  setShowDeleteModal(false);
-                  setDeletePassword('');
-                  setDeleteError(null);
+                  setShowDeleteModal(false)
+                  setDeletePassword('')
+                  setDeleteError(null)
                 }}
                 disabled={deleteLoading}
                 style={{
@@ -331,7 +331,7 @@ function Dashboard() {
         </div>
       )}
     </div>
-  );
+  )
 }
 
-export default Dashboard;
+export default Dashboard

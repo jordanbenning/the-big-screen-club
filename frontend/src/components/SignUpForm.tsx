@@ -1,92 +1,92 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { authApi } from '../api/authApi';
-import type { SignUpRequest } from '../types/auth';
+import { authApi } from '../api/authApi'
+import type { SignUpRequest } from '../types/auth'
 
 function SignUpForm() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [formData, setFormData] = useState<SignUpRequest>({
     email: '',
     password: '',
     username: '',
-  });
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
+  })
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setError(null);
-  };
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    setError(null)
+  }
 
   const validateForm = (): boolean => {
     // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(formData.email)) {
-      setError('Invalid email format');
-      return false;
+      setError('Invalid email format')
+      return false
     }
 
     // Username validation
-    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/
     if (!usernameRegex.test(formData.username)) {
       setError(
         'Username must be 3-20 characters and contain only letters, numbers, and underscores'
-      );
-      return false;
+      )
+      return false
     }
 
     // Password validation
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/
     if (!passwordRegex.test(formData.password)) {
       setError(
         'Password must be at least 8 characters and contain at least one uppercase letter, one lowercase letter, and one number'
-      );
-      return false;
+      )
+      return false
     }
 
     // Confirm password match
     if (formData.password !== confirmPassword) {
-      setError('Passwords do not match');
-      return false;
+      setError('Passwords do not match')
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     void (async () => {
       try {
-        await authApi.signup(formData);
-        setSuccess(true);
+        await authApi.signup(formData)
+        setSuccess(true)
       } catch (err) {
         if (err instanceof Error && 'response' in err) {
           const axiosError = err as {
-            response?: { data?: { error?: string } };
-          };
+            response?: { data?: { error?: string } }
+          }
           setError(
             axiosError.response?.data?.error ?? 'Failed to create account'
-          );
+          )
         } else {
-          setError('Failed to create account');
+          setError('Failed to create account')
         }
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    })();
-  };
+    })()
+  }
 
   if (success) {
     return (
@@ -108,7 +108,7 @@ function SignUpForm() {
         </p>
         <button
           onClick={() => {
-            void navigate('/');
+            void navigate('/')
           }}
           style={{
             marginTop: '30px',
@@ -124,7 +124,7 @@ function SignUpForm() {
           Back to Home
         </button>
       </div>
-    );
+    )
   }
 
   return (
@@ -236,8 +236,8 @@ function SignUpForm() {
             name="confirmPassword"
             value={confirmPassword}
             onChange={(e) => {
-              setConfirmPassword(e.target.value);
-              setError(null);
+              setConfirmPassword(e.target.value)
+              setError(null)
             }}
             required
             style={{
@@ -287,7 +287,7 @@ function SignUpForm() {
         Already have an account?{' '}
         <button
           onClick={() => {
-            void navigate('/login');
+            void navigate('/login')
           }}
           style={{
             background: 'none',
@@ -302,7 +302,7 @@ function SignUpForm() {
         </button>
       </p>
     </div>
-  );
+  )
 }
 
-export default SignUpForm;
+export default SignUpForm

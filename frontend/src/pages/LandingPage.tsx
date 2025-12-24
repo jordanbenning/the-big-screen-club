@@ -1,15 +1,15 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 function LandingPage() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const handleSignUp = () => {
-    void navigate('/signup');
-  };
+    void navigate('/signup')
+  }
 
   const handleLogin = () => {
-    void navigate('/login');
-  };
+    void navigate('/login')
+  }
 
   return (
     <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -87,7 +87,7 @@ function LandingPage() {
         </div>
       </section>
     </div>
-  );
+  )
 }
 
-export default LandingPage;
+export default LandingPage

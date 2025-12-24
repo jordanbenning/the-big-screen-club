@@ -1,30 +1,30 @@
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { render, screen } from '@testing-library/react'
+import { BrowserRouter } from 'react-router-dom'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-import { useAuth } from '../../contexts/AuthContext';
-import ProtectedRoute from '../ProtectedRoute';
+import { useAuth } from '../../contexts/AuthContext'
+import ProtectedRoute from '../ProtectedRoute'
 
 // Mock the useAuth hook
-vi.mock('../../contexts/AuthContext');
+vi.mock('../../contexts/AuthContext')
 
 // Mock useNavigate
-const mockNavigate = vi.fn();
+const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
     Navigate: ({ to }: { to: string }) => {
-      mockNavigate(to);
-      return <div data-testid="navigate">{`Redirecting to ${to}`}</div>;
+      mockNavigate(to)
+      return <div data-testid="navigate">{`Redirecting to ${to}`}</div>
     },
-  };
-});
+  }
+})
 
 describe('ProtectedRoute', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-  });
+    vi.clearAllMocks()
+  })
 
   it('should show nothing while loading', () => {
     vi.mocked(useAuth).mockReturnValue({
@@ -34,7 +34,7 @@ describe('ProtectedRoute', () => {
       login: vi.fn(),
       logout: vi.fn(),
       checkAuth: vi.fn(),
-    });
+    })
 
     const { container } = render(
       <BrowserRouter>
@@ -42,10 +42,10 @@ describe('ProtectedRoute', () => {
           <div>Protected Content</div>
         </ProtectedRoute>
       </BrowserRouter>
-    );
+    )
 
-    expect(container.firstChild).toBeNull();
-  });
+    expect(container.firstChild).toBeNull()
+  })
 
   it('should redirect to login when not authenticated', () => {
     vi.mocked(useAuth).mockReturnValue({
@@ -55,7 +55,7 @@ describe('ProtectedRoute', () => {
       login: vi.fn(),
       logout: vi.fn(),
       checkAuth: vi.fn(),
-    });
+    })
 
     render(
       <BrowserRouter>
@@ -63,10 +63,10 @@ describe('ProtectedRoute', () => {
           <div>Protected Content</div>
         </ProtectedRoute>
       </BrowserRouter>
-    );
+    )
 
-    expect(mockNavigate).toHaveBeenCalledWith('/login');
-  });
+    expect(mockNavigate).toHaveBeenCalledWith('/login')
+  })
 
   it('should show protected content when authenticated', () => {
     vi.mocked(useAuth).mockReturnValue({
@@ -82,7 +82,7 @@ describe('ProtectedRoute', () => {
       login: vi.fn(),
       logout: vi.fn(),
       checkAuth: vi.fn(),
-    });
+    })
 
     render(
       <BrowserRouter>
@@ -90,13 +90,13 @@ describe('ProtectedRoute', () => {
           <div>Protected Content</div>
         </ProtectedRoute>
       </BrowserRouter>
-    );
+    )
 
-    expect(screen.getByText('Protected Content')).toBeInTheDocument();
-  });
+    expect(screen.getByText('Protected Content')).toBeInTheDocument()
+  })
 
   it('should call checkAuth on mount', () => {
-    const mockCheckAuth = vi.fn();
+    const mockCheckAuth = vi.fn()
     vi.mocked(useAuth).mockReturnValue({
       user: null,
       isAuthenticated: false,
@@ -104,7 +104,7 @@ describe('ProtectedRoute', () => {
       login: vi.fn(),
       logout: vi.fn(),
       checkAuth: mockCheckAuth,
-    });
+    })
 
     render(
       <BrowserRouter>
@@ -112,8 +112,8 @@ describe('ProtectedRoute', () => {
           <div>Protected Content</div>
         </ProtectedRoute>
       </BrowserRouter>
-    );
+    )
 
-    expect(mockCheckAuth).toHaveBeenCalled();
-  });
-});
+    expect(mockCheckAuth).toHaveBeenCalled()
+  })
+})

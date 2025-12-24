@@ -1,8 +1,8 @@
-import nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
+import nodemailer from 'nodemailer'
+import type { Transporter } from 'nodemailer'
 
 class EmailService {
-  private transporter: Transporter | null = null;
+  private transporter: Transporter | null = null
 
   async initialize(): Promise<void> {
     // Check if SMTP credentials are provided in environment
@@ -21,10 +21,10 @@ class EmailService {
           user: process.env.SMTP_USER,
           pass: process.env.SMTP_PASS,
         },
-      });
+      })
     } else {
       // Use Ethereal Email for development
-      const testAccount = await nodemailer.createTestAccount();
+      const testAccount = await nodemailer.createTestAccount()
       this.transporter = nodemailer.createTransport({
         host: 'smtp.ethereal.email',
         port: 587,
@@ -33,11 +33,11 @@ class EmailService {
           user: testAccount.user,
           pass: testAccount.pass,
         },
-      });
+      })
 
-      console.log('📧 Using Ethereal Email for development');
-      console.log(`   Preview emails at: https://ethereal.email/messages`);
-      console.log(`   User: ${testAccount.user}`);
+      console.log('📧 Using Ethereal Email for development')
+      console.log(`   Preview emails at: https://ethereal.email/messages`)
+      console.log(`   User: ${testAccount.user}`)
     }
   }
 
@@ -47,15 +47,15 @@ class EmailService {
     token: string
   ): Promise<void> {
     if (this.transporter === null) {
-      await this.initialize();
+      await this.initialize()
     }
 
     if (this.transporter === null) {
-      throw new Error('Email transporter not initialized');
+      throw new Error('Email transporter not initialized')
     }
 
-    const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:3000';
-    const verificationUrl = `${backendUrl}/api/auth/verify/${token}`;
+    const backendUrl = process.env.BACKEND_URL ?? 'http://localhost:3000'
+    const verificationUrl = `${backendUrl}/api/auth/verify/${token}`
 
     const info = await this.transporter.sendMail({
       from: '"The Big Screen Club" <noreply@bigscreenclub.com>',
@@ -99,11 +99,11 @@ class EmailService {
         </body>
         </html>
       `,
-    });
+    })
 
     // Log preview URL for Ethereal Email (development only)
     if (process.env.SMTP_HOST === undefined || process.env.SMTP_HOST === '') {
-      console.log(`📬 Preview email: ${nodemailer.getTestMessageUrl(info)}`);
+      console.log(`📬 Preview email: ${nodemailer.getTestMessageUrl(info)}`)
     }
   }
 
@@ -113,15 +113,15 @@ class EmailService {
     token: string
   ): Promise<void> {
     if (this.transporter === null) {
-      await this.initialize();
+      await this.initialize()
     }
 
     if (this.transporter === null) {
-      throw new Error('Email transporter not initialized');
+      throw new Error('Email transporter not initialized')
     }
 
-    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173';
-    const resetUrl = `${frontendUrl}/reset-password?token=${token}`;
+    const frontendUrl = process.env.FRONTEND_URL ?? 'http://localhost:5173'
+    const resetUrl = `${frontendUrl}/reset-password?token=${token}`
 
     const info = await this.transporter.sendMail({
       from: '"The Big Screen Club" <noreply@bigscreenclub.com>',
@@ -166,13 +166,13 @@ class EmailService {
         </body>
         </html>
       `,
-    });
+    })
 
     // Log preview URL for Ethereal Email (development only)
     if (process.env.SMTP_HOST === undefined || process.env.SMTP_HOST === '') {
-      console.log(`📬 Preview email: ${nodemailer.getTestMessageUrl(info)}`);
+      console.log(`📬 Preview email: ${nodemailer.getTestMessageUrl(info)}`)
     }
   }
 }
 
-export const emailService = new EmailService();
+export const emailService = new EmailService()

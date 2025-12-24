@@ -1,13 +1,13 @@
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom'
 
 function VerifyError() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const message = searchParams.get('message') ?? 'Verification failed';
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const message = searchParams.get('message') ?? 'Verification failed'
 
   const handleSignUp = () => {
-    void navigate('/signup');
-  };
+    void navigate('/signup')
+  }
 
   return (
     <div
@@ -42,7 +42,7 @@ function VerifyError() {
         Try Signing Up Again
       </button>
     </div>
-  );
+  )
 }
 
-export default VerifyError;
+export default VerifyError

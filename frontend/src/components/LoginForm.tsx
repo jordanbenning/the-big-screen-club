@@ -1,129 +1,129 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
-import { authApi } from '../api/authApi';
-import { useAuth } from '../contexts/AuthContext';
-import type { LoginRequest } from '../types/auth';
+import { authApi } from '../api/authApi'
+import { useAuth } from '../contexts/AuthContext'
+import type { LoginRequest } from '../types/auth'
 
 function LoginForm() {
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const navigate = useNavigate()
+  const { login } = useAuth()
   const [formData, setFormData] = useState<LoginRequest>({
     email: '',
     password: '',
-  });
-  const [rememberMe, setRememberMe] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [showResendVerification, setShowResendVerification] = useState(false);
-  const [resendSuccess, setResendSuccess] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
+  })
+  const [rememberMe, setRememberMe] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [showResendVerification, setShowResendVerification] = useState(false)
+  const [resendSuccess, setResendSuccess] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setError(null);
-  };
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+    setError(null)
+  }
 
   const validateForm = (): boolean => {
     // Simple validation - just check if fields are not empty
     if (formData.email.trim() === '') {
-      setError('Email or username is required');
-      return false;
+      setError('Email or username is required')
+      return false
     }
 
     if (formData.password.trim() === '') {
-      setError('Password is required');
-      return false;
+      setError('Password is required')
+      return false
     }
 
-    return true;
-  };
+    return true
+  }
 
   const handleForgotPassword = () => {
-    void navigate('/forgot-password');
-  };
+    void navigate('/forgot-password')
+  }
 
   const handleResendVerification = () => {
-    setResendLoading(true);
-    setResendSuccess(false);
+    setResendLoading(true)
+    setResendSuccess(false)
 
     void (async () => {
       try {
-        await authApi.resendVerification(formData.email);
-        setResendSuccess(true);
-        setError(null);
+        await authApi.resendVerification(formData.email)
+        setResendSuccess(true)
+        setError(null)
       } catch (err) {
         if (err instanceof Error && 'response' in err) {
           const axiosError = err as {
-            response?: { data?: { error?: string } };
-          };
+            response?: { data?: { error?: string } }
+          }
           setError(
             axiosError.response?.data?.error ??
               'Failed to resend verification email'
-          );
+          )
         } else {
-          setError('Failed to resend verification email');
+          setError('Failed to resend verification email')
         }
       } finally {
-        setResendLoading(false);
+        setResendLoading(false)
       }
-    })();
-  };
+    })()
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
     if (!validateForm()) {
-      return;
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
 
     void (async () => {
       try {
-        const response = await authApi.login({ ...formData, rememberMe });
+        const response = await authApi.login({ ...formData, rememberMe })
 
         // Update auth context with user data
-        login(response.user);
+        login(response.user)
 
         // Store remember me preference
         if (rememberMe) {
-          localStorage.setItem('rememberMe', 'true');
+          localStorage.setItem('rememberMe', 'true')
         } else {
-          localStorage.removeItem('rememberMe');
+          localStorage.removeItem('rememberMe')
         }
 
         // The PublicOnlyRoute will automatically redirect to dashboard
-        void navigate('/dashboard');
+        void navigate('/dashboard')
       } catch (err) {
         if (err instanceof Error && 'response' in err) {
           const axiosError = err as {
-            response?: { data?: { error?: string } };
-          };
+            response?: { data?: { error?: string } }
+          }
           const errorMessage =
-            axiosError.response?.data?.error ?? 'Login failed';
-          setError(errorMessage);
+            axiosError.response?.data?.error ?? 'Login failed'
+          setError(errorMessage)
 
           // Show resend verification button if email is not verified
           if (
             errorMessage === 'Please verify your email before logging in' &&
             formData.email !== ''
           ) {
-            setShowResendVerification(true);
+            setShowResendVerification(true)
           } else {
-            setShowResendVerification(false);
+            setShowResendVerification(false)
           }
         } else {
-          setError('Login failed');
-          setShowResendVerification(false);
+          setError('Login failed')
+          setShowResendVerification(false)
         }
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    })();
-  };
+    })()
+  }
 
   return (
     <div style={{ padding: '40px', maxWidth: '500px', margin: '0 auto' }}>
@@ -209,7 +209,7 @@ function LoginForm() {
               type="checkbox"
               checked={rememberMe}
               onChange={(e) => {
-                setRememberMe(e.target.checked);
+                setRememberMe(e.target.checked)
               }}
               style={{
                 marginRight: '8px',
@@ -308,7 +308,7 @@ function LoginForm() {
         Don&apos;t have an account?{' '}
         <button
           onClick={() => {
-            void navigate('/signup');
+            void navigate('/signup')
           }}
           style={{
             background: 'none',
@@ -323,7 +323,7 @@ function LoginForm() {
         </button>
       </p>
     </div>
-  );
+  )
 }
 
-export default LoginForm;
+export default LoginForm

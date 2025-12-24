@@ -1,31 +1,31 @@
-import { PrismaClient } from '@prisma/client';
-import connectPgSimple from 'connect-pg-simple';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import express, { type Request, type Response } from 'express';
-import session from 'express-session';
+import { PrismaClient } from '@prisma/client'
+import connectPgSimple from 'connect-pg-simple'
+import cors from 'cors'
+import dotenv from 'dotenv'
+import express, { type Request, type Response } from 'express'
+import session from 'express-session'
 
-import './types/session';
-import authRoutes from './routes/authRoutes';
+import './types/session'
+import authRoutes from './routes/authRoutes'
 
 // Load environment variables
-dotenv.config();
+dotenv.config()
 
-const app = express();
-const prisma = new PrismaClient();
+const app = express()
+const prisma = new PrismaClient()
 const PORT =
-  process.env.PORT !== undefined ? parseInt(process.env.PORT, 10) : 3000;
+  process.env.PORT !== undefined ? parseInt(process.env.PORT, 10) : 3000
 
 // Session configuration
-const PgStore = connectPgSimple(session);
+const PgStore = connectPgSimple(session)
 
 app.use(
   cors({
     origin: process.env.FRONTEND_URL ?? 'http://localhost:5173',
     credentials: true,
   })
-);
-app.use(express.json());
+)
+app.use(express.json())
 
 // Session middleware
 app.use(
@@ -45,23 +45,23 @@ app.use(
       sameSite: 'lax',
     },
   })
-);
+)
 
 // Routes
 app.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'The Big Screen Club API is running' });
-});
+  res.json({ message: 'The Big Screen Club API is running' })
+})
 
-app.use('/api/auth', authRoutes);
+app.use('/api/auth', authRoutes)
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   void (async () => {
-    await prisma.$disconnect();
-    process.exit(0);
-  })();
-});
+    await prisma.$disconnect()
+    process.exit(0)
+  })()
+})
 
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+  console.log(`Server is running on http://localhost:${PORT}`)
+})
