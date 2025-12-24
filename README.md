@@ -4,16 +4,60 @@ A web application for creating movie clubs, suggesting and voting on movies, and
 
 ## Features
 
-### Authentication (Completed)
+### ✅ Authentication & User Management (Completed)
 
 - ✅ User registration with email verification
 - ✅ Session-based authentication with PostgreSQL session store
 - ✅ Password hashing with bcrypt
-- ✅ Email verification system
-- ✅ Landing page with Sign Up / Log In buttons
-- ✅ Secure session cookies
-- 🚧 Login flow (coming soon)
-- 🚧 Password reset (coming soon)
+- ✅ Email verification system with Ethereal Email (dev) integration
+- ✅ Email resend functionality
+- ✅ Login with email or username
+- ✅ "Remember Me" functionality (7 or 30 day sessions)
+- ✅ Forgot password flow with reset tokens
+- ✅ Password reset via email
+- ✅ User dashboard with profile information
+- ✅ Account deletion with password confirmation
+- ✅ Landing page with Sign Up / Log In
+- ✅ Protected and public-only routes
+- ✅ Secure session cookies with httpOnly
+- ✅ Session state tracking (localStorage)
+- ✅ Comprehensive test coverage
+
+### 🚧 Planned Features
+
+#### Movie Clubs
+
+- Create and manage movie clubs
+- Invite members to clubs
+- Club member roles (admin, member)
+- Club activity feed
+
+#### Film Management
+
+- Suggest films to watch
+- Vote on film suggestions
+- Film watch history per club
+- Film ratings and reviews
+- Compare ratings across club members
+
+#### Timestamp Comments (Key Feature)
+
+- **Add comments to specific timestamps in films during playback**
+- **View comments synchronized with video playback**
+- **Reply to timestamp comments**
+- **Like/react to timestamp comments**
+- **Video player integration with comment markers on timeline**
+- Jump to specific timestamps from comments
+- Filter comments by timestamp range
+
+#### Additional Features
+
+- Film discussion threads
+- Watch party scheduling
+- User profiles and avatars
+- Notification system
+- Search and filter films
+- External API integration (TMDB/OMDB)
 
 ## Project Structure
 
