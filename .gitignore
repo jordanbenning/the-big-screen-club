@@ -47,3 +47,6 @@ coverage/
 
 # OS files
 Thumbs.db
+
+# User uploads
+backend/uploads/

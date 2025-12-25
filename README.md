@@ -23,13 +23,27 @@ A web application for creating movie clubs, suggesting and voting on movies, and
 - ✅ Session state tracking (localStorage)
 - ✅ Comprehensive test coverage
 
+### ✅ Movie Clubs (Completed)
+
+- ✅ Create movie clubs with name, description, and profile picture
+- ✅ Public/private club settings
+- ✅ Automatic admin assignment for club creators
+- ✅ View all clubs user is a member of
+- ✅ Club member count tracking
+- ✅ 12-member limit per club
+- ✅ Profile picture upload (JPEG/PNG, max 5MB)
+- ✅ Empty state and club grid display
+- ✅ Form validation (name 3-50 chars, description max 500 chars)
+
 ### 🚧 Planned Features
 
-#### Movie Clubs
+#### Movie Clubs (Phase 2)
 
-- Create and manage movie clubs
 - Invite members to clubs
-- Club member roles (admin, member)
+- Accept/reject club invitations
+- Public club discovery and join requests
+- Edit club settings
+- Leave/delete clubs
 - Club activity feed
 
 #### Film Management

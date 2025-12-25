@@ -1,3 +1,5 @@
+import path from 'path'
+
 import { PrismaClient } from '@prisma/client'
 import connectPgSimple from 'connect-pg-simple'
 import cors from 'cors'
@@ -7,6 +9,7 @@ import session from 'express-session'
 
 import './types/session'
 import authRoutes from './routes/authRoutes'
+import clubRoutes from './routes/clubRoutes'
 
 // Load environment variables
 dotenv.config()
@@ -26,6 +29,9 @@ app.use(
   })
 )
 app.use(express.json())
+
+// Serve static files (club profile pictures)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')))
 
 // Session middleware
 app.use(
@@ -53,6 +59,7 @@ app.get('/', (req: Request, res: Response) => {
 })
 
 app.use('/api/auth', authRoutes)
+app.use('/api/clubs', clubRoutes)
 
 // Graceful shutdown
 process.on('SIGINT', () => {

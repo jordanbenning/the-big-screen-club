@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { authApi } from '../api/authApi'
+import ClubList from '../components/ClubList'
 import { useAuth } from '../contexts/AuthContext'
 
 function Dashboard() {
@@ -63,7 +64,7 @@ function Dashboard() {
   // ProtectedRoute already handles authentication check
 
   return (
-    <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto' }}>
+    <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
       <div
         style={{
           display: 'flex',
@@ -104,6 +105,15 @@ function Dashboard() {
             <p style={{ color: '#666', fontSize: '1.1rem' }}>
               You&apos;re successfully logged in to The Big Screen Club.
             </p>
+          </div>
+
+          {/* Movie Clubs Section */}
+          <div
+            style={{
+              marginBottom: '30px',
+            }}
+          >
+            <ClubList />
           </div>
 
           <div
@@ -148,22 +158,6 @@ function Dashboard() {
                 </div>
               </div>
             </div>
-          </div>
-
-          <div
-            style={{
-              marginTop: '30px',
-              padding: '20px',
-              backgroundColor: '#e7f3ff',
-              borderRadius: '8px',
-              border: '1px solid #b3d7ff',
-            }}
-          >
-            <h3 style={{ marginTop: 0, color: '#004085' }}>🎬 Coming Soon!</h3>
-            <p style={{ color: '#004085', margin: 0 }}>
-              Movie clubs, voting, and rating features are on their way. Stay
-              tuned!
-            </p>
           </div>
 
           {/* Delete Account Section */}

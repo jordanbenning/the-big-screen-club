@@ -19,6 +19,10 @@ model User {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
   verificationTokens VerificationToken[]
+  clubMemberships    ClubMember[]
+  createdClubs       Club[]              @relation("ClubCreator")
+  sentInvitations    ClubInvitation[]    @relation("InvitationSender")
+  receivedInvitations ClubInvitation[]   @relation("InvitationReceiver")
 
   @@map("users")
 }
@@ -32,6 +36,65 @@ model VerificationToken {
   createdAt DateTime @default(now())
 
   @@map("verification_tokens")
+}
+
+enum ClubRole {
+  ADMIN
+  MEMBER
+
+  @@map("club_role")
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+
+  @@map("invitation_status")
+}
+
+model Club {
+  id                String         @id @default(uuid())
+  name              String         @unique
+  description       String?
+  profilePictureUrl String?
+  isPublic          Boolean        @default(false)
+  createdById       String
+  creator           User           @relation("ClubCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  members           ClubMember[]
+  invitations       ClubInvitation[]
+
+  @@map("clubs")
+}
+
+model ClubMember {
+  id       String   @id @default(uuid())
+  clubId   String
+  club     Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role     ClubRole @default(MEMBER)
+  joinedAt DateTime @default(now())
+
+  @@unique([clubId, userId])
+  @@map("club_members")
+}
+
+model ClubInvitation {
+  id             String           @id @default(uuid())
+  clubId         String
+  club           Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  invitedUserId  String
+  invitedUser    User             @relation("InvitationReceiver", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  invitedByUserId String
+  invitedBy      User             @relation("InvitationSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+  status         InvitationStatus @default(PENDING)
+  createdAt      DateTime         @default(now())
+  expiresAt      DateTime
+
+  @@map("club_invitations")
 }
 
 // Note: Session table is managed by connect-pg-simple library
