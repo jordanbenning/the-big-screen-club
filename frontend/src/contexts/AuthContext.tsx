@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react'
+import React, { createContext, useContext, useEffect, useState } from 'react'
 
 import { authApi } from '../api/authApi'
 import type { User } from '../types/auth'
@@ -19,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // Start as true
   const [hasChecked, setHasChecked] = useState(false)
 
   const checkAuth = async () => {
@@ -37,6 +37,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setHasChecked(true)
     }
   }
+
+  // Check auth on mount
+  useEffect(() => {
+    void checkAuth()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const login = (userData: User) => {
     setUser(userData)

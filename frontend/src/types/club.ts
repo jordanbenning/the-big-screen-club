@@ -13,6 +13,14 @@ export interface Club {
   role: ClubRole
 }
 
+export interface ClubMember {
+  id: string
+  username: string
+  email: string
+  role: ClubRole
+  joinedAt: string
+}
+
 export interface ClubFormData {
   name: string
   description: string

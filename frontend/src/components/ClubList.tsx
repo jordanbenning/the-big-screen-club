@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 import { clubApi } from '../api/clubApi'
 import type { Club, ClubFormData } from '../types/club'
@@ -8,6 +9,7 @@ import CreateClubModal from './CreateClubModal'
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 function ClubList() {
+  const navigate = useNavigate()
   const [clubs, setClubs] = useState<Club[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -144,6 +146,15 @@ function ClubList() {
               key={club.id}
               role="button"
               tabIndex={0}
+              onClick={() => {
+                void navigate(`/clubs/${club.id}`)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  void navigate(`/clubs/${club.id}`)
+                }
+              }}
               style={{
                 border: '1px solid #dee2e6',
                 borderRadius: '8px',
@@ -157,11 +168,6 @@ function ClubList() {
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.boxShadow = 'none'
-              }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  // Future: Navigate to club page
-                }
               }}
             >
               {/* Profile Picture */}

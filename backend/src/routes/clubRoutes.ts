@@ -183,4 +183,281 @@ router.get('/:id', requireAuth, (req: Request, res: Response) => {
   })()
 })
 
+/**
+ * GET /api/clubs/:id/members - Get club members
+ */
+router.get('/:id/members', requireAuth, (req: Request, res: Response) => {
+  void (async () => {
+    try {
+      const userId = req.session.userId
+      const { id } = req.params
+
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
+
+      const members = await clubService.getClubMembers(id, userId)
+      res.json(members)
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Not a member of this club') {
+          res.status(403).json({ error: error.message })
+          return
+        }
+      }
+      console.error('Error fetching club members:', error)
+      res.status(500).json({ error: 'Failed to fetch club members' })
+    }
+  })()
+})
+
+/**
+ * POST /api/clubs/:id/leave - Leave a club
+ */
+router.post('/:id/leave', requireAuth, (req: Request, res: Response) => {
+  void (async () => {
+    try {
+      const userId = req.session.userId
+      const { id } = req.params
+
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
+
+      await clubService.leaveClub(id, userId)
+      res.json({ message: 'Successfully left the club' })
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message === 'Not a member of this club') {
+          res.status(403).json({ error: error.message })
+          return
+        }
+      }
+      console.error('Error leaving club:', error)
+      res.status(500).json({ error: 'Failed to leave club' })
+    }
+  })()
+})
+
+/**
+ * POST /api/clubs/:id/invite - Invite a member to a club
+ */
+router.post('/:id/invite', requireAuth, (req: Request, res: Response) => {
+  void (async () => {
+    try {
+      const userId = req.session.userId
+      const { id } = req.params
+      const { username } = req.body
+
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
+
+      if (typeof username !== 'string' || username.trim() === '') {
+        res.status(400).json({ error: 'Username is required' })
+        return
+      }
+
+      await clubService.inviteMember(id, userId, username.trim())
+      res.json({ message: 'Invitation sent successfully' })
+    } catch (error) {
+      if (error instanceof Error) {
+        if (
+          error.message === 'Not a member of this club' ||
+          error.message === 'Only admins can invite members' ||
+          error.message === 'User not found' ||
+          error.message === 'User is already a member of this club' ||
+          error.message === 'Club has reached maximum member limit (12)' ||
+          error.message === 'User already has a pending invitation'
+        ) {
+          res.status(400).json({ error: error.message })
+          return
+        }
+      }
+      console.error('Error inviting member:', error)
+      res.status(500).json({ error: 'Failed to invite member' })
+    }
+  })()
+})
+
+/**
+ * DELETE /api/clubs/:id/members/:userId - Remove a member from a club
+ */
+router.delete(
+  '/:id/members/:userId',
+  requireAuth,
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const adminUserId = req.session.userId
+        const { id, userId } = req.params
+
+        if (adminUserId === undefined) {
+          res.status(401).json({ error: 'Not authenticated' })
+          return
+        }
+
+        await clubService.removeMember(id, adminUserId, userId)
+        res.json({ message: 'Member removed successfully' })
+      } catch (error) {
+        if (error instanceof Error) {
+          if (
+            error.message === 'Not a member of this club' ||
+            error.message === 'Only admins can remove members' ||
+            error.message === 'Use leave club to remove yourself' ||
+            error.message === 'User is not a member of this club'
+          ) {
+            res.status(400).json({ error: error.message })
+            return
+          }
+        }
+        console.error('Error removing member:', error)
+        res.status(500).json({ error: 'Failed to remove member' })
+      }
+    })()
+  }
+)
+
+/**
+ * PATCH /api/clubs/:id/members/:userId/role - Change a member's role
+ */
+router.patch(
+  '/:id/members/:userId/role',
+  requireAuth,
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const adminUserId = req.session.userId
+        const { id, userId } = req.params
+        const { role } = req.body
+
+        if (adminUserId === undefined) {
+          res.status(401).json({ error: 'Not authenticated' })
+          return
+        }
+
+        if (role !== 'ADMIN' && role !== 'MEMBER') {
+          res.status(400).json({ error: 'Invalid role' })
+          return
+        }
+
+        await clubService.changeMemberRole(id, adminUserId, userId, role)
+        res.json({ message: 'Member role updated successfully' })
+      } catch (error) {
+        if (error instanceof Error) {
+          if (
+            error.message === 'Not a member of this club' ||
+            error.message === 'Only admins can change member roles' ||
+            error.message === 'User is not a member of this club'
+          ) {
+            res.status(400).json({ error: error.message })
+            return
+          }
+        }
+        console.error('Error changing member role:', error)
+        res.status(500).json({ error: 'Failed to change member role' })
+      }
+    })()
+  }
+)
+
+/**
+ * PATCH /api/clubs/:id - Update club settings
+ */
+router.patch(
+  '/:id',
+  requireAuth,
+  upload.single('profilePicture'),
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const userId = req.session.userId
+        const { id } = req.params
+        const { name, description, isPublic } = req.body
+
+        if (userId === undefined) {
+          res.status(401).json({ error: 'Not authenticated' })
+          return
+        }
+
+        const updateData: {
+          name?: string
+          description?: string
+          profilePictureUrl?: string
+          isPublic?: boolean
+        } = {}
+
+        // Validate and add name if provided
+        if (name !== undefined && name !== null && name !== '') {
+          if (typeof name !== 'string' || name.trim().length < 3) {
+            res
+              .status(400)
+              .json({ error: 'Club name must be at least 3 characters' })
+            return
+          }
+
+          if (name.trim().length > 50) {
+            res
+              .status(400)
+              .json({ error: 'Club name must not exceed 50 characters' })
+            return
+          }
+
+          updateData.name = name.trim()
+        }
+
+        // Validate and add description if provided
+        if (description !== undefined && description !== null) {
+          if (description !== '' && typeof description !== 'string') {
+            res.status(400).json({ error: 'Description must be a string' })
+            return
+          }
+
+          if (description.length > 500) {
+            res
+              .status(400)
+              .json({ error: 'Description must not exceed 500 characters' })
+            return
+          }
+
+          updateData.description =
+            description.trim() !== '' ? description.trim() : null
+        }
+
+        // Add profile picture if uploaded
+        if (req.file !== undefined) {
+          updateData.profilePictureUrl = `/uploads/club-profiles/${req.file.filename}`
+        }
+
+        // Add isPublic if provided
+        if (isPublic !== undefined) {
+          updateData.isPublic = isPublic === 'true' || isPublic === true
+        }
+
+        const club = await clubService.updateClub(id, userId, updateData)
+        res.json(club)
+      } catch (error) {
+        if (error instanceof Error) {
+          if (
+            error.message === 'Not a member of this club' ||
+            error.message === 'Only admins can update club settings'
+          ) {
+            res.status(403).json({ error: error.message })
+            return
+          }
+          if (error.message === 'A club with this name already exists') {
+            res.status(409).json({ error: error.message })
+            return
+          }
+        }
+        console.error('Error updating club:', error)
+        res.status(500).json({ error: 'Failed to update club' })
+      }
+    })()
+  }
+)
+
 export default router

@@ -3,6 +3,9 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicOnlyRoute from './components/PublicOnlyRoute'
 import { AuthProvider } from './contexts/AuthContext'
+import ClubMembersPage from './pages/ClubMembersPage'
+import ClubPage from './pages/ClubPage'
+import ClubSettingsPage from './pages/ClubSettingsPage'
 import Dashboard from './pages/Dashboard'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import LandingPage from './pages/LandingPage'
@@ -62,6 +65,30 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/clubs/:id"
+            element={
+              <ProtectedRoute>
+                <ClubPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/clubs/:id/members"
+            element={
+              <ProtectedRoute>
+                <ClubMembersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/clubs/:id/settings"
+            element={
+              <ProtectedRoute>
+                <ClubSettingsPage />
               </ProtectedRoute>
             }
           />
