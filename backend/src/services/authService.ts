@@ -253,6 +253,95 @@ export class AuthService {
     return { username: user.username, token }
   }
 
+  async updateProfile(
+    userId: string,
+    updates: { username?: string; email?: string; profilePictureUrl?: string }
+  ): Promise<UserResponse> {
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (user === null) {
+      throw new Error('User not found')
+    }
+
+    // Check if username or email is being changed to an existing value
+    if (updates.username !== undefined || updates.email !== undefined) {
+      const existingUser = await prisma.user.findFirst({
+        where: {
+          AND: [
+            { NOT: { id: userId } },
+            {
+              OR: [
+                updates.username !== undefined
+                  ? { username: updates.username }
+                  : {},
+                updates.email !== undefined ? { email: updates.email } : {},
+              ].filter((condition) => Object.keys(condition).length > 0),
+            },
+          ],
+        },
+      })
+
+      if (existingUser !== null) {
+        if (
+          updates.username !== undefined &&
+          existingUser.username === updates.username
+        ) {
+          throw new Error('Username already taken')
+        }
+        if (
+          updates.email !== undefined &&
+          existingUser.email === updates.email
+        ) {
+          throw new Error('Email already in use')
+        }
+      }
+    }
+
+    // Update user
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: updates,
+    })
+
+    return this.toUserResponse(updatedUser)
+  }
+
+  async updatePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<{ message: string }> {
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    })
+
+    if (user === null) {
+      throw new Error('User not found')
+    }
+
+    // Verify current password
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password)
+
+    if (!isPasswordValid) {
+      throw new Error('Current password is incorrect')
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS)
+
+    // Update password
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    })
+
+    return { message: 'Password updated successfully' }
+  }
+
   async deleteAccount(
     userId: string,
     password: string
@@ -281,6 +370,25 @@ export class AuthService {
     return { message: 'Account deleted successfully' }
   }
 
+  async searchUserByUsername(username: string): Promise<{
+    id: string
+    username: string
+    email: string
+    profilePictureUrl: string | null
+  } | null> {
+    const user = await prisma.user.findUnique({
+      where: { username },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        profilePictureUrl: true,
+      },
+    })
+
+    return user
+  }
+
   private toUserResponse(user: {
     id: string
     email: string
@@ -289,6 +397,7 @@ export class AuthService {
     createdAt: Date
     password: string
     updatedAt: Date
+    profilePictureUrl: string | null
   }): UserResponse {
     return {
       id: user.id,
@@ -296,6 +405,7 @@ export class AuthService {
       username: user.username,
       isVerified: user.isVerified,
       createdAt: user.createdAt,
+      profilePictureUrl: user.profilePictureUrl ?? undefined,
     }
   }
 }

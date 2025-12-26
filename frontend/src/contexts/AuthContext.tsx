@@ -13,6 +13,8 @@ interface AuthContextType {
   logout: () => Promise<void>
   clearUser: () => void
   checkAuth: () => Promise<void>
+  // eslint-disable-next-line no-unused-vars
+  updateUser: (user: User) => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -66,6 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     sessionHelper.markLoggedOut()
   }
 
+  const updateUser = (userData: User) => {
+    setUser(userData)
+  }
+
   const value: AuthContextType = {
     user,
     isAuthenticated: user !== null,
@@ -74,6 +80,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     logout,
     clearUser,
     checkAuth,
+    updateUser,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

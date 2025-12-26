@@ -24,8 +24,16 @@ export interface User {
   id: string
   email: string
   username: string
+  profilePictureUrl?: string
   isVerified: boolean
   createdAt: string
+}
+
+export interface UserSearchResult {
+  id: string
+  username: string
+  email: string
+  profilePictureUrl: string | null
 }
 
 export interface ErrorResponse {

@@ -1,7 +1,8 @@
 import path from 'path'
 
 import express, { type Request, type Response } from 'express'
-import multer, { type FileFilterCallback } from 'multer'
+import type { FileFilterCallback } from 'multer'
+import multer from 'multer'
 
 import { requireAuth } from '../middleware/authMiddleware'
 import { clubService } from '../services/clubService'
@@ -22,7 +23,8 @@ const storage = multer.diskStorage({
 
 const fileFilter = (
   _req: Request,
-  file: multer.File,
+  // eslint-disable-next-line no-undef
+  file: Express.Multer.File,
   cb: FileFilterCallback
 ) => {
   // Accept only JPEG and PNG images

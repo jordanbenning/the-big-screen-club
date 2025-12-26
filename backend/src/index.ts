@@ -10,6 +10,7 @@ import session from 'express-session'
 import './types/session'
 import authRoutes from './routes/authRoutes'
 import clubRoutes from './routes/clubRoutes'
+import userRoutes from './routes/userRoutes'
 
 // Load environment variables
 dotenv.config()
@@ -60,6 +61,7 @@ app.get('/', (req: Request, res: Response) => {
 
 app.use('/api/auth', authRoutes)
 app.use('/api/clubs', clubRoutes)
+app.use('/api/users', userRoutes)
 
 // Graceful shutdown
 process.on('SIGINT', () => {

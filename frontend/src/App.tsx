@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
+import Header from './components/Header'
 import ProtectedRoute from './components/ProtectedRoute'
 import PublicOnlyRoute from './components/PublicOnlyRoute'
 import { AuthProvider } from './contexts/AuthContext'
@@ -10,6 +11,7 @@ import Dashboard from './pages/Dashboard'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
+import ProfilePage from './pages/ProfilePage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import SignUpPage from './pages/SignUpPage'
 import VerifyError from './pages/VerifyError'
@@ -19,6 +21,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
+        <Header />
         <Routes>
           <Route
             path="/"
@@ -65,6 +68,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
               </ProtectedRoute>
             }
           />

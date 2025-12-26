@@ -89,4 +89,44 @@ export const authApi = {
     )
     return response.data
   },
+
+  async updateProfile(updates: {
+    username?: string
+    email?: string
+  }): Promise<{ message: string; user: User }> {
+    const response = await api.patch<{ message: string; user: User }>(
+      '/api/auth/profile',
+      updates
+    )
+    return response.data
+  },
+
+  async updatePassword(data: {
+    currentPassword: string
+    newPassword: string
+  }): Promise<{ message: string }> {
+    const response = await api.patch<{ message: string }>(
+      '/api/auth/password',
+      data
+    )
+    return response.data
+  },
+
+  async updateProfilePicture(
+    file: File
+  ): Promise<{ message: string; user: User }> {
+    const formData = new FormData()
+    formData.append('profilePicture', file)
+
+    const response = await api.patch<{ message: string; user: User }>(
+      '/api/auth/profile-picture',
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    )
+    return response.data
+  },
 }

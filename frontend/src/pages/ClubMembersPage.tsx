@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { clubApi } from '../api/clubApi'
+import { userApi } from '../api/userApi'
 import { useAuth } from '../contexts/AuthContext'
+import type { UserSearchResult } from '../types/auth'
 import type { Club, ClubMember } from '../types/club'
+
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 function ClubMembersPage() {
   const { id } = useParams<{ id: string }>()
@@ -17,6 +21,11 @@ function ClubMembersPage() {
   const [inviteUsername, setInviteUsername] = useState('')
   const [inviteLoading, setInviteLoading] = useState(false)
   const [inviteError, setInviteError] = useState<string | null>(null)
+  const [searching, setSearching] = useState(false)
+  const [foundUser, setFoundUser] = useState<UserSearchResult | null>(null)
+  const [userNotFound, setUserNotFound] = useState(false)
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const searchAbortControllerRef = useRef<AbortController | null>(null)
 
   const fetchData = () => {
     if (id === undefined) {
@@ -50,17 +59,82 @@ function ClubMembersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
+  // Debounced user search effect
+  useEffect(() => {
+    // Clear any existing timeout
+    if (searchTimeoutRef.current !== null) {
+      clearTimeout(searchTimeoutRef.current)
+    }
+
+    // Cancel any pending request
+    if (searchAbortControllerRef.current !== null) {
+      searchAbortControllerRef.current.abort()
+    }
+
+    // Reset states when input changes
+    setFoundUser(null)
+    setUserNotFound(false)
+
+    // Don't search if less than 3 characters
+    if (inviteUsername.trim().length < 3) {
+      setSearching(false)
+      return
+    }
+
+    // Set searching state
+    setSearching(true)
+
+    // Create new abort controller for this request
+    const abortController = new AbortController()
+    searchAbortControllerRef.current = abortController
+
+    // Debounce the search
+    searchTimeoutRef.current = setTimeout(() => {
+      void (async () => {
+        try {
+          const result = await userApi.searchUserByUsername(
+            inviteUsername.trim()
+          )
+          // Only update state if this request wasn't aborted
+          if (!abortController.signal.aborted) {
+            setFoundUser(result)
+            setUserNotFound(false)
+            setSearching(false)
+          }
+        } catch {
+          if (!abortController.signal.aborted) {
+            setFoundUser(null)
+            setUserNotFound(true)
+            setSearching(false)
+          }
+        }
+      })()
+    }, 500) // 500ms debounce
+
+    // Cleanup function
+    return () => {
+      if (searchTimeoutRef.current !== null) {
+        clearTimeout(searchTimeoutRef.current)
+      }
+      if (searchAbortControllerRef.current !== null) {
+        searchAbortControllerRef.current.abort()
+      }
+    }
+  }, [inviteUsername])
+
   const handleInviteMember = () => {
-    if (id === undefined) return
+    if (id === undefined || foundUser === null) return
 
     setInviteLoading(true)
     setInviteError(null)
 
     void (async () => {
       try {
-        await clubApi.inviteMember(id, inviteUsername.trim())
+        await clubApi.inviteMember(id, foundUser.username)
         setShowInviteModal(false)
         setInviteUsername('')
+        setFoundUser(null)
+        setUserNotFound(false)
         // eslint-disable-next-line no-alert
         window.alert('Invitation sent successfully!')
       } catch (err) {
@@ -174,6 +248,16 @@ function ClubMembersPage() {
 
   return (
     <div style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Add keyframe animation for spinner */}
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
+
       {/* Header with back button */}
       <div style={{ marginBottom: '30px' }}>
         <button
@@ -394,7 +478,7 @@ function ClubMembersPage() {
                   setInviteUsername(e.target.value)
                   setInviteError(null)
                 }}
-                placeholder="Enter username"
+                placeholder="Enter username (min 3 characters)"
                 style={{
                   width: '100%',
                   padding: '12px',
@@ -405,6 +489,133 @@ function ClubMembersPage() {
               />
             </div>
 
+            {/* Searching indicator */}
+            {searching && (
+              <div
+                style={{
+                  padding: '12px',
+                  backgroundColor: '#e7f3ff',
+                  color: '#004085',
+                  borderRadius: '5px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                }}
+              >
+                <div
+                  style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid #004085',
+                    borderTopColor: 'transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite',
+                  }}
+                />
+                Searching...
+              </div>
+            )}
+
+            {/* User found display */}
+            {foundUser !== null && !searching && (
+              <div
+                style={{
+                  padding: '15px',
+                  backgroundColor: '#d4edda',
+                  border: '1px solid #c3e6cb',
+                  borderRadius: '5px',
+                  marginBottom: '20px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '15px',
+                  }}
+                >
+                  {/* Profile Picture */}
+                  {foundUser.profilePictureUrl !== null ? (
+                    <img
+                      src={`${API_URL}${foundUser.profilePictureUrl}`}
+                      alt={foundUser.username}
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '2px solid #28a745',
+                      }}
+                    />
+                  ) : (
+                    <div
+                      style={{
+                        width: '50px',
+                        height: '50px',
+                        borderRadius: '50%',
+                        backgroundColor: '#6c757d',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '1.5rem',
+                        fontWeight: 'bold',
+                        border: '2px solid #28a745',
+                      }}
+                    >
+                      {foundUser.username.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+
+                  {/* User Info */}
+                  <div style={{ flex: 1 }}>
+                    <div
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: '1.1rem',
+                        color: '#155724',
+                        marginBottom: '2px',
+                      }}
+                    >
+                      {foundUser.username}
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#155724' }}>
+                      {foundUser.email}
+                    </div>
+                  </div>
+
+                  {/* Check mark */}
+                  <div
+                    style={{
+                      fontSize: '1.5rem',
+                      color: '#28a745',
+                    }}
+                  >
+                    ✓
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* User not found message */}
+            {userNotFound &&
+              !searching &&
+              inviteUsername.trim().length >= 3 && (
+                <div
+                  style={{
+                    padding: '12px',
+                    backgroundColor: '#f8d7da',
+                    color: '#721c24',
+                    borderRadius: '5px',
+                    marginBottom: '20px',
+                  }}
+                >
+                  User not found
+                </div>
+              )}
+
+            {/* API Error message */}
             {inviteError !== null && (
               <div
                 style={{
@@ -431,6 +642,9 @@ function ClubMembersPage() {
                   setShowInviteModal(false)
                   setInviteUsername('')
                   setInviteError(null)
+                  setFoundUser(null)
+                  setUserNotFound(false)
+                  setSearching(false)
                 }}
                 disabled={inviteLoading}
                 style={{
@@ -448,19 +662,17 @@ function ClubMembersPage() {
               </button>
               <button
                 onClick={handleInviteMember}
-                disabled={inviteLoading || inviteUsername.trim() === ''}
+                disabled={inviteLoading || foundUser === null}
                 style={{
                   padding: '10px 20px',
                   fontSize: '1rem',
                   backgroundColor:
-                    inviteLoading || inviteUsername.trim() === ''
-                      ? '#ccc'
-                      : '#007bff',
+                    inviteLoading || foundUser === null ? '#ccc' : '#007bff',
                   color: 'white',
                   border: 'none',
                   borderRadius: '5px',
                   cursor:
-                    inviteLoading || inviteUsername.trim() === ''
+                    inviteLoading || foundUser === null
                       ? 'not-allowed'
                       : 'pointer',
                   fontWeight: 'bold',

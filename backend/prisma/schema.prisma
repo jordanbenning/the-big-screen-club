@@ -15,6 +15,7 @@ model User {
   email              String              @unique
   password           String
   username           String              @unique
+  profilePictureUrl  String?
   isVerified         Boolean             @default(false)
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
