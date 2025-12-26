@@ -11,19 +11,20 @@ datasource db {
 }
 
 model User {
-  id                 String              @id @default(uuid())
-  email              String              @unique
-  password           String
-  username           String              @unique
-  profilePictureUrl  String?
-  isVerified         Boolean             @default(false)
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  verificationTokens VerificationToken[]
-  clubMemberships    ClubMember[]
-  createdClubs       Club[]              @relation("ClubCreator")
-  sentInvitations    ClubInvitation[]    @relation("InvitationSender")
-  receivedInvitations ClubInvitation[]   @relation("InvitationReceiver")
+  id                  String              @id @default(uuid())
+  email               String              @unique
+  password            String
+  username            String              @unique
+  profilePictureUrl   String?
+  isVerified          Boolean             @default(false)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+  verificationTokens  VerificationToken[]
+  clubMemberships     ClubMember[]
+  createdClubs        Club[]              @relation("ClubCreator")
+  sentInvitations     ClubInvitation[]    @relation("InvitationSender")
+  receivedInvitations ClubInvitation[]    @relation("InvitationReceiver")
+  notifications       Notification[]
 
   @@map("users")
 }
@@ -54,16 +55,22 @@ enum InvitationStatus {
   @@map("invitation_status")
 }
 
+enum NotificationType {
+  CLUB_INVITATION
+
+  @@map("notification_type")
+}
+
 model Club {
-  id                String         @id @default(uuid())
-  name              String         @unique
+  id                String           @id @default(uuid())
+  name              String           @unique
   description       String?
   profilePictureUrl String?
-  isPublic          Boolean        @default(false)
+  isPublic          Boolean          @default(false)
   createdById       String
-  creator           User           @relation("ClubCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  creator           User             @relation("ClubCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
   members           ClubMember[]
   invitations       ClubInvitation[]
 
@@ -84,20 +91,33 @@ model ClubMember {
 }
 
 model ClubInvitation {
-  id             String           @id @default(uuid())
-  clubId         String
-  club           Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  invitedUserId  String
-  invitedUser    User             @relation("InvitationReceiver", fields: [invitedUserId], references: [id], onDelete: Cascade)
+  id              String           @id @default(uuid())
+  clubId          String
+  club            Club             @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  invitedUserId   String
+  invitedUser     User             @relation("InvitationReceiver", fields: [invitedUserId], references: [id], onDelete: Cascade)
   invitedByUserId String
-  invitedBy      User             @relation("InvitationSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
-  status         InvitationStatus @default(PENDING)
-  createdAt      DateTime         @default(now())
-  expiresAt      DateTime
+  invitedBy       User             @relation("InvitationSender", fields: [invitedByUserId], references: [id], onDelete: Cascade)
+  status          InvitationStatus @default(PENDING)
+  createdAt       DateTime         @default(now())
+  expiresAt       DateTime
+  notifications   Notification[]
 
   @@map("club_invitations")
 }
 
+model Notification {
+  id                String           @id @default(uuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              NotificationType
+  relatedId         String
+  relatedInvitation ClubInvitation   @relation(fields: [relatedId], references: [id], onDelete: Cascade)
+  isRead            Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+
+  @@map("notifications")
+}
+
 // Note: Session table is managed by connect-pg-simple library
 // It will be created automatically with the correct schema
-

@@ -462,4 +462,81 @@ router.patch(
   }
 )
 
+/**
+ * POST /api/clubs/invitations/:id/accept - Accept a club invitation
+ */
+router.post(
+  '/invitations/:id/accept',
+  requireAuth,
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const userId = req.session.userId
+        const { id } = req.params
+
+        if (userId === undefined) {
+          res.status(401).json({ error: 'Not authenticated' })
+          return
+        }
+
+        await clubService.acceptInvitation(id, userId)
+        res.json({ message: 'Invitation accepted successfully' })
+      } catch (error) {
+        if (error instanceof Error) {
+          if (
+            error.message === 'Invitation not found' ||
+            error.message === 'This invitation is not for you' ||
+            error.message === 'This invitation has already been responded to' ||
+            error.message === 'This invitation has expired' ||
+            error.message === 'You are already a member of this club' ||
+            error.message === 'Club has reached maximum member limit (12)'
+          ) {
+            res.status(400).json({ error: error.message })
+            return
+          }
+        }
+        console.error('Error accepting invitation:', error)
+        res.status(500).json({ error: 'Failed to accept invitation' })
+      }
+    })()
+  }
+)
+
+/**
+ * POST /api/clubs/invitations/:id/reject - Reject a club invitation
+ */
+router.post(
+  '/invitations/:id/reject',
+  requireAuth,
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const userId = req.session.userId
+        const { id } = req.params
+
+        if (userId === undefined) {
+          res.status(401).json({ error: 'Not authenticated' })
+          return
+        }
+
+        await clubService.rejectInvitation(id, userId)
+        res.json({ message: 'Invitation rejected successfully' })
+      } catch (error) {
+        if (error instanceof Error) {
+          if (
+            error.message === 'Invitation not found' ||
+            error.message === 'This invitation is not for you' ||
+            error.message === 'This invitation has already been responded to'
+          ) {
+            res.status(400).json({ error: error.message })
+            return
+          }
+        }
+        console.error('Error rejecting invitation:', error)
+        res.status(500).json({ error: 'Failed to reject invitation' })
+      }
+    })()
+  }
+)
+
 export default router

@@ -1,5 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 
+import { notificationService } from './notificationService'
+
 const prisma = new PrismaClient()
 
 interface CreateClubData {
@@ -331,7 +333,7 @@ export const clubService = {
     const expiresAt = new Date()
     expiresAt.setDate(expiresAt.getDate() + 7)
 
-    await prisma.clubInvitation.create({
+    const invitation = await prisma.clubInvitation.create({
       data: {
         clubId,
         invitedUserId: userToInvite.id,
@@ -339,6 +341,130 @@ export const clubService = {
         expiresAt,
       },
     })
+
+    // Create notification for the invited user
+    await notificationService.createNotification(
+      userToInvite.id,
+      'CLUB_INVITATION',
+      invitation.id
+    )
+  },
+
+  /**
+   * Accept a club invitation
+   */
+  async acceptInvitation(invitationId: string, userId: string): Promise<void> {
+    // Get the invitation
+    const invitation = await prisma.clubInvitation.findUnique({
+      where: { id: invitationId },
+      include: {
+        club: true,
+      },
+    })
+
+    if (invitation === null) {
+      throw new Error('Invitation not found')
+    }
+
+    // Verify the invitation is for this user
+    if (invitation.invitedUserId !== userId) {
+      throw new Error('This invitation is not for you')
+    }
+
+    // Check if invitation is still pending
+    if (invitation.status !== 'PENDING') {
+      throw new Error('This invitation has already been responded to')
+    }
+
+    // Check if invitation has expired
+    if (invitation.expiresAt < new Date()) {
+      throw new Error('This invitation has expired')
+    }
+
+    // Check if user is already a member
+    const existingMembership = await prisma.clubMember.findUnique({
+      where: {
+        clubId_userId: {
+          clubId: invitation.clubId,
+          userId,
+        },
+      },
+    })
+
+    if (existingMembership !== null) {
+      throw new Error('You are already a member of this club')
+    }
+
+    // Check member limit
+    const canAddMember = await this.validateMemberLimit(invitation.clubId)
+    if (!canAddMember) {
+      throw new Error('Club has reached maximum member limit (12)')
+    }
+
+    // Accept the invitation: add user to club and update invitation status
+    await prisma.$transaction([
+      prisma.clubMember.create({
+        data: {
+          clubId: invitation.clubId,
+          userId,
+          role: 'MEMBER',
+        },
+      }),
+      prisma.clubInvitation.update({
+        where: { id: invitationId },
+        data: { status: 'ACCEPTED' },
+      }),
+    ])
+
+    // Mark the notification as read
+    const notification =
+      await notificationService.getNotificationByInvitationId(
+        invitationId,
+        userId
+      )
+    if (notification !== null) {
+      await notificationService.markAsRead(notification.id, userId)
+    }
+  },
+
+  /**
+   * Reject a club invitation
+   */
+  async rejectInvitation(invitationId: string, userId: string): Promise<void> {
+    // Get the invitation
+    const invitation = await prisma.clubInvitation.findUnique({
+      where: { id: invitationId },
+    })
+
+    if (invitation === null) {
+      throw new Error('Invitation not found')
+    }
+
+    // Verify the invitation is for this user
+    if (invitation.invitedUserId !== userId) {
+      throw new Error('This invitation is not for you')
+    }
+
+    // Check if invitation is still pending
+    if (invitation.status !== 'PENDING') {
+      throw new Error('This invitation has already been responded to')
+    }
+
+    // Update invitation status to rejected
+    await prisma.clubInvitation.update({
+      where: { id: invitationId },
+      data: { status: 'REJECTED' },
+    })
+
+    // Mark the notification as read
+    const notification =
+      await notificationService.getNotificationByInvitationId(
+        invitationId,
+        userId
+      )
+    if (notification !== null) {
+      await notificationService.markAsRead(notification.id, userId)
+    }
   },
 
   /**

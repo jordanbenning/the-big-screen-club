@@ -154,5 +154,63 @@ describe('AuthService - Username/Email Login', () => {
         authService.authenticateUser('nonexistent', 'password123')
       ).rejects.toThrow('Invalid credentials')
     })
+
+    it('should authenticate user with case-insensitive username', async () => {
+      const mockUser = {
+        id: 'user-1',
+        email: 'test@example.com',
+        username: 'testuser',
+        password: 'hashedpassword',
+        isVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        profilePictureUrl: null,
+      }
+
+      vi.mocked(mockPrisma.user.findFirst).mockResolvedValue(mockUser)
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never)
+
+      // Test with uppercase username
+      const result = await authService.authenticateUser(
+        'TestUser',
+        'password123'
+      )
+
+      expect(result.email).toBe('test@example.com')
+      expect(result.username).toBe('testuser')
+      // Verify that the username was normalized to lowercase before query
+      expect(mockPrisma.user.findFirst).toHaveBeenCalledWith({
+        where: { username: 'testuser' },
+      })
+    })
+
+    it('should authenticate user with mixed case username', async () => {
+      const mockUser = {
+        id: 'user-1',
+        email: 'test@example.com',
+        username: 'testuser',
+        password: 'hashedpassword',
+        isVerified: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        profilePictureUrl: null,
+      }
+
+      vi.mocked(mockPrisma.user.findFirst).mockResolvedValue(mockUser)
+      vi.mocked(bcrypt.compare).mockResolvedValue(true as never)
+
+      // Test with mixed case username
+      const result = await authService.authenticateUser(
+        'TeStUsEr',
+        'password123'
+      )
+
+      expect(result.email).toBe('test@example.com')
+      expect(result.username).toBe('testuser')
+      // Verify that the username was normalized to lowercase before query
+      expect(mockPrisma.user.findFirst).toHaveBeenCalledWith({
+        where: { username: 'testuser' },
+      })
+    })
   })
 })

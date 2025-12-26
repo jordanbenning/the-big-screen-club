@@ -15,13 +15,13 @@ export class AuthService {
     password: string,
     username: string
   ): Promise<UserResponse> {
+    // Normalize username to lowercase for storage
+    const normalizedUsername = username.toLowerCase()
+
     // Check if user already exists (case-insensitive username check)
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [
-          { email },
-          { username: { equals: username, mode: 'insensitive' } },
-        ],
+        OR: [{ email }, { username: normalizedUsername }],
       },
     })
 
@@ -40,7 +40,7 @@ export class AuthService {
       data: {
         email,
         password: hashedPassword,
-        username,
+        username: normalizedUsername,
         isVerified: false,
       },
     })
@@ -113,11 +113,16 @@ export class AuthService {
     // Determine if input is email (contains @) or username
     const isEmail = emailOrUsername.includes('@')
 
-    // Find user by email or username (case-insensitive for username)
+    // Normalize username to lowercase for lookup
+    const normalizedInput = isEmail
+      ? emailOrUsername
+      : emailOrUsername.toLowerCase()
+
+    // Find user by email or username
     const user = await prisma.user.findFirst({
       where: isEmail
-        ? { email: emailOrUsername }
-        : { username: { equals: emailOrUsername, mode: 'insensitive' } },
+        ? { email: normalizedInput }
+        : { username: normalizedInput },
     })
 
     if (user === null) {
@@ -269,23 +274,29 @@ export class AuthService {
       throw new Error('User not found')
     }
 
+    // Normalize username to lowercase if being updated
+    const normalizedUpdates = {
+      ...updates,
+      username: updates.username?.toLowerCase(),
+    }
+
     // Check if username or email is being changed to an existing value
-    if (updates.username !== undefined || updates.email !== undefined) {
+    if (
+      normalizedUpdates.username !== undefined ||
+      normalizedUpdates.email !== undefined
+    ) {
       const existingUser = await prisma.user.findFirst({
         where: {
           AND: [
             { NOT: { id: userId } },
             {
               OR: [
-                updates.username !== undefined
-                  ? {
-                      username: {
-                        equals: updates.username,
-                        mode: 'insensitive' as const,
-                      },
-                    }
+                normalizedUpdates.username !== undefined
+                  ? { username: normalizedUpdates.username }
                   : {},
-                updates.email !== undefined ? { email: updates.email } : {},
+                normalizedUpdates.email !== undefined
+                  ? { email: normalizedUpdates.email }
+                  : {},
               ].filter((condition) => Object.keys(condition).length > 0),
             },
           ],
@@ -294,14 +305,14 @@ export class AuthService {
 
       if (existingUser !== null) {
         if (
-          updates.username !== undefined &&
-          existingUser.username.toLowerCase() === updates.username.toLowerCase()
+          normalizedUpdates.username !== undefined &&
+          existingUser.username === normalizedUpdates.username
         ) {
           throw new Error('Username already taken')
         }
         if (
-          updates.email !== undefined &&
-          existingUser.email === updates.email
+          normalizedUpdates.email !== undefined &&
+          existingUser.email === normalizedUpdates.email
         ) {
           throw new Error('Email already in use')
         }
@@ -311,7 +322,7 @@ export class AuthService {
     // Update user
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: updates,
+      data: normalizedUpdates,
     })
 
     return this.toUserResponse(updatedUser)
@@ -384,8 +395,11 @@ export class AuthService {
     email: string
     profilePictureUrl: string | null
   } | null> {
+    // Normalize username to lowercase for lookup
+    const normalizedUsername = username.toLowerCase()
+
     const user = await prisma.user.findFirst({
-      where: { username: { equals: username, mode: 'insensitive' } },
+      where: { username: normalizedUsername },
       select: {
         id: true,
         username: true,

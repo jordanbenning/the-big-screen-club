@@ -109,4 +109,18 @@ export const clubApi = {
 
     return response.data
   },
+
+  /**
+   * Accept a club invitation
+   */
+  async acceptInvitation(invitationId: string): Promise<void> {
+    await api.post(`/api/clubs/invitations/${invitationId}/accept`)
+  },
+
+  /**
+   * Reject a club invitation
+   */
+  async rejectInvitation(invitationId: string): Promise<void> {
+    await api.post(`/api/clubs/invitations/${invitationId}/reject`)
+  },
 }
