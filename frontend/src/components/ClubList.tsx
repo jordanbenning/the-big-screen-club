@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { clubApi } from '../api/clubApi'
-import type { Club, ClubFormData } from '../types/club'
+import { useClubs } from '../contexts/ClubContext'
+import type { ClubFormData } from '../types/club'
 
 import CreateClubModal from './CreateClubModal'
 
@@ -10,31 +11,8 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
 function ClubList() {
   const navigate = useNavigate()
-  const [clubs, setClubs] = useState<Club[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { clubs, isLoading: loading, refreshClubs } = useClubs()
   const [showCreateModal, setShowCreateModal] = useState(false)
-
-  const fetchClubs = () => {
-    setLoading(true)
-    setError(null)
-
-    void (async () => {
-      try {
-        const data = await clubApi.getUserClubs()
-        setClubs(data)
-      } catch (err) {
-        console.error('Error fetching clubs:', err)
-        setError('Failed to load clubs')
-      } finally {
-        setLoading(false)
-      }
-    })()
-  }
-
-  useEffect(() => {
-    fetchClubs()
-  }, [])
 
   const handleCreateClub = async (formData: ClubFormData) => {
     await clubApi.createClub(formData)
@@ -42,28 +20,13 @@ function ClubList() {
 
   const handleCreateSuccess = () => {
     setShowCreateModal(false)
-    fetchClubs()
+    void refreshClubs()
   }
 
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
         <p style={{ fontSize: '1.1rem', color: '#666' }}>Loading clubs...</p>
-      </div>
-    )
-  }
-
-  if (error !== null) {
-    return (
-      <div
-        style={{
-          padding: '20px',
-          backgroundColor: '#fee',
-          color: '#c33',
-          borderRadius: '8px',
-        }}
-      >
-        {error}
       </div>
     )
   }

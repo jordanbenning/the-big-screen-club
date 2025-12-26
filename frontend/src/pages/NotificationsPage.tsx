@@ -1,25 +1,36 @@
 import { useState } from 'react'
 
 import { clubApi } from '../api/clubApi'
+import InlineAlert from '../components/InlineAlert'
+import { useClubs } from '../contexts/ClubContext'
 import { useNotifications } from '../contexts/NotificationContext'
 
 function NotificationsPage() {
   const { notifications, markAllAsRead, refreshNotifications } =
     useNotifications()
+  const { refreshClubs } = useClubs()
   const [filter, setFilter] = useState<'all' | 'unread' | 'read'>('all')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [alert, setAlert] = useState<{
+    type: 'success' | 'error'
+    message: string
+  } | null>(null)
 
   const handleAcceptInvitation = async (invitationId: string) => {
     try {
       setActionLoading(invitationId)
       await clubApi.acceptInvitation(invitationId)
-      await refreshNotifications()
-      // eslint-disable-next-line no-alert
-      window.alert('Invitation accepted! Club added to your list.')
+      await Promise.all([refreshNotifications(), refreshClubs()])
+      setAlert({
+        type: 'success',
+        message: 'Invitation accepted! Club added to your list.',
+      })
     } catch (error) {
       console.error('Failed to accept invitation:', error)
-      // eslint-disable-next-line no-alert
-      window.alert('Failed to accept invitation. Please try again.')
+      setAlert({
+        type: 'error',
+        message: 'Failed to accept invitation. Please try again.',
+      })
     } finally {
       setActionLoading(null)
     }
@@ -32,8 +43,10 @@ function NotificationsPage() {
       await refreshNotifications()
     } catch (error) {
       console.error('Failed to reject invitation:', error)
-      // eslint-disable-next-line no-alert
-      window.alert('Failed to reject invitation. Please try again.')
+      setAlert({
+        type: 'error',
+        message: 'Failed to reject invitation. Please try again.',
+      })
     } finally {
       setActionLoading(null)
     }
@@ -44,8 +57,10 @@ function NotificationsPage() {
       await markAllAsRead()
     } catch (error) {
       console.error('Failed to mark all as read:', error)
-      // eslint-disable-next-line no-alert
-      window.alert('Failed to mark all as read. Please try again.')
+      setAlert({
+        type: 'error',
+        message: 'Failed to mark all as read. Please try again.',
+      })
     }
   }
 
@@ -151,6 +166,17 @@ function NotificationsPage() {
           </button>
         ))}
       </div>
+
+      {/* Alert for notification actions */}
+      {alert !== null && (
+        <InlineAlert
+          type={alert.type}
+          message={alert.message}
+          onDismiss={() => {
+            setAlert(null)
+          }}
+        />
+      )}
 
       {/* Notifications List */}
       {filteredNotifications.length === 0 ? (

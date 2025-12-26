@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { clubApi } from '../api/clubApi'
+import InlineAlert from '../components/InlineAlert'
+import { useClubs } from '../contexts/ClubContext'
 import type { Club, ClubFormData } from '../types/club'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
@@ -10,11 +12,15 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 function ClubSettingsPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { refreshClubs } = useClubs()
   const [club, setClub] = useState<Club | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [saveLoading, setSaveLoading] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  const [alert, setAlert] = useState<{
+    type: 'success' | 'error'
+    message: string
+  } | null>(null)
 
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -76,7 +82,7 @@ function ClubSettingsPage() {
     if (id === undefined) return
 
     setSaveLoading(true)
-    setSaveError(null)
+    setAlert(null)
 
     void (async () => {
       try {
@@ -89,19 +95,32 @@ function ClubSettingsPage() {
 
         const updatedClub = await clubApi.updateClub(id, formData)
         setClub(updatedClub)
-        // eslint-disable-next-line no-alert
-        window.alert('Club settings updated successfully!')
-        void navigate(`/clubs/${id}`)
+        // Refresh clubs list to show updated information
+        await refreshClubs()
+        setAlert({
+          type: 'success',
+          message: 'Club settings updated successfully!',
+        })
+        // Navigate after a short delay to show success message
+        setTimeout(() => {
+          void navigate(`/clubs/${id}`)
+        }, 1500)
       } catch (err) {
         if (err instanceof Error && 'response' in err) {
           const axiosError = err as {
             response?: { data?: { error?: string } }
           }
-          setSaveError(
-            axiosError.response?.data?.error ?? 'Failed to update club settings'
-          )
+          setAlert({
+            type: 'error',
+            message:
+              axiosError.response?.data?.error ??
+              'Failed to update club settings',
+          })
         } else {
-          setSaveError('Failed to update club settings')
+          setAlert({
+            type: 'error',
+            message: 'Failed to update club settings',
+          })
         }
       } finally {
         setSaveLoading(false)
@@ -212,7 +231,7 @@ function ClubSettingsPage() {
             value={name}
             onChange={(e) => {
               setName(e.target.value)
-              setSaveError(null)
+              setAlert(null)
             }}
             placeholder="Enter club name"
             style={{
@@ -246,7 +265,7 @@ function ClubSettingsPage() {
             value={description}
             onChange={(e) => {
               setDescription(e.target.value)
-              setSaveError(null)
+              setAlert(null)
             }}
             placeholder="Enter club description"
             rows={4}
@@ -331,7 +350,7 @@ function ClubSettingsPage() {
               checked={isPublic}
               onChange={(e) => {
                 setIsPublic(e.target.checked)
-                setSaveError(null)
+                setAlert(null)
               }}
               style={{
                 width: '20px',
@@ -356,19 +375,15 @@ function ClubSettingsPage() {
           </small>
         </div>
 
-        {/* Error Message */}
-        {saveError !== null && (
-          <div
-            style={{
-              padding: '12px',
-              backgroundColor: '#fee',
-              color: '#c33',
-              borderRadius: '5px',
-              marginBottom: '20px',
+        {/* Alert Message */}
+        {alert !== null && (
+          <InlineAlert
+            type={alert.type}
+            message={alert.message}
+            onDismiss={() => {
+              setAlert(null)
             }}
-          >
-            {saveError}
-          </div>
+          />
         )}
 
         {/* Action Buttons */}

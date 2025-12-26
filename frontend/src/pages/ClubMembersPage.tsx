@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import { clubApi } from '../api/clubApi'
 import { userApi } from '../api/userApi'
+import InlineAlert from '../components/InlineAlert'
 import { useAuth } from '../contexts/AuthContext'
 import type { UserSearchResult } from '../types/auth'
 import type { Club, ClubMember } from '../types/club'
@@ -26,6 +27,10 @@ function ClubMembersPage() {
   const [userNotFound, setUserNotFound] = useState(false)
   const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const searchAbortControllerRef = useRef<AbortController | null>(null)
+  const [alert, setAlert] = useState<{
+    type: 'success' | 'error'
+    message: string
+  } | null>(null)
 
   const fetchData = () => {
     if (id === undefined) {
@@ -135,8 +140,10 @@ function ClubMembersPage() {
         setInviteUsername('')
         setFoundUser(null)
         setUserNotFound(false)
-        // eslint-disable-next-line no-alert
-        window.alert('Invitation sent successfully!')
+        setAlert({
+          type: 'success',
+          message: 'Invitation sent successfully!',
+        })
       } catch (err) {
         if (err instanceof Error && 'response' in err) {
           const axiosError = err as {
@@ -169,8 +176,10 @@ function ClubMembersPage() {
         fetchData() // Refresh the list
       } catch (err) {
         console.error('Error removing member:', err)
-        // eslint-disable-next-line no-alert
-        window.alert('Failed to remove member. Please try again.')
+        setAlert({
+          type: 'error',
+          message: 'Failed to remove member. Please try again.',
+        })
       }
     })()
   }
@@ -193,8 +202,10 @@ function ClubMembersPage() {
         fetchData() // Refresh the list
       } catch (err) {
         console.error('Error changing role:', err)
-        // eslint-disable-next-line no-alert
-        window.alert('Failed to change member role. Please try again.')
+        setAlert({
+          type: 'error',
+          message: 'Failed to change member role. Please try again.',
+        })
       }
     })()
   }
@@ -278,6 +289,17 @@ function ClubMembersPage() {
           ← Back to Club
         </button>
       </div>
+
+      {/* Alert for member actions */}
+      {alert !== null && (
+        <InlineAlert
+          type={alert.type}
+          message={alert.message}
+          onDismiss={() => {
+            setAlert(null)
+          }}
+        />
+      )}
 
       {/* Page Title */}
       <div

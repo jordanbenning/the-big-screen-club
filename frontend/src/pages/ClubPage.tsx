@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { clubApi } from '../api/clubApi'
+import InlineAlert from '../components/InlineAlert'
+import { useClubs } from '../contexts/ClubContext'
 import type { Club } from '../types/club'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
@@ -9,11 +11,16 @@ const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 function ClubPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const { refreshClubs } = useClubs()
   const [club, setClub] = useState<Club | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showLeaveModal, setShowLeaveModal] = useState(false)
   const [leaveLoading, setLeaveLoading] = useState(false)
+  const [alert, setAlert] = useState<{
+    type: 'success' | 'error'
+    message: string
+  } | null>(null)
 
   useEffect(() => {
     if (id === undefined) {
@@ -43,12 +50,16 @@ function ClubPage() {
     void (async () => {
       try {
         await clubApi.leaveClub(id)
+        // Refresh clubs list before navigating
+        await refreshClubs()
         // Navigate back to dashboard after leaving
         void navigate('/dashboard')
       } catch (err) {
         console.error('Error leaving club:', err)
-        // eslint-disable-next-line no-alert
-        window.alert('Failed to leave club. Please try again.')
+        setAlert({
+          type: 'error',
+          message: 'Failed to leave club. Please try again.',
+        })
       } finally {
         setLeaveLoading(false)
         setShowLeaveModal(false)
@@ -123,6 +134,17 @@ function ClubPage() {
           ← Back to Dashboard
         </button>
       </div>
+
+      {/* Alert for errors */}
+      {alert !== null && (
+        <InlineAlert
+          type={alert.type}
+          message={alert.message}
+          onDismiss={() => {
+            setAlert(null)
+          }}
+        />
+      )}
 
       {/* Club Header */}
       <div

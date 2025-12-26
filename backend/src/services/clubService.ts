@@ -323,9 +323,21 @@ export const clubService = {
         invitedUserId: userToInvite.id,
         status: 'PENDING',
       },
+      include: {
+        notifications: true,
+      },
     })
 
     if (existingInvitation !== null) {
+      // If the invitation exists but has no notification (orphaned), create one
+      if (existingInvitation.notifications.length === 0) {
+        await notificationService.createNotification(
+          userToInvite.id,
+          'CLUB_INVITATION',
+          existingInvitation.id
+        )
+        return // Invitation already exists, just added the missing notification
+      }
       throw new Error('User already has a pending invitation')
     }
 
