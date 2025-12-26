@@ -15,7 +15,7 @@ const mockUser: User = {
   email: 'test@example.com',
   username: 'testuser',
   isVerified: true,
-  createdAt: new Date('2024-01-01'),
+  createdAt: '2024-01-01T00:00:00.000Z',
 }
 
 describe('AuthContext', () => {
@@ -108,7 +108,7 @@ describe('AuthContext', () => {
 
   it('should set loading state during checkAuth', async () => {
     // eslint-disable-next-line no-unused-vars
-    let resolvePromise: ((value: User) => void) | undefined
+    let resolvePromise!: (value: User) => void
     const promise = new Promise<User>((_resolve) => {
       resolvePromise = _resolve
     })
@@ -130,11 +130,9 @@ describe('AuthContext', () => {
     })
 
     // Resolve the promise
-    if (resolvePromise !== undefined) {
-      act(() => {
-        resolvePromise(mockUser)
-      })
-    }
+    act(() => {
+      resolvePromise(mockUser)
+    })
 
     // Wait for completion
     await waitFor(() => {

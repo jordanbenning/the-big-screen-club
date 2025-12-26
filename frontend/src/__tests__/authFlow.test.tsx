@@ -23,7 +23,7 @@ const mockUser: User = {
   email: 'test@example.com',
   username: 'testuser',
   isVerified: true,
-  createdAt: new Date('2024-01-01'),
+  createdAt: '2024-01-01T00:00:00.000Z',
 }
 
 // Helper to render app with routes

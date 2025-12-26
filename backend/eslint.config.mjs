@@ -4,6 +4,9 @@ import rootConfig from '../eslint.config.mjs';
 export default [
   ...rootConfig,
   {
+    ignores: ['**/*.test.ts', '**/__tests__/**'],
+  },
+  {
     files: ['**/*.{ts,js}'],
     languageOptions: {
       parserOptions: {

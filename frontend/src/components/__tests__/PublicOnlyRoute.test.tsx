@@ -35,7 +35,9 @@ describe('PublicOnlyRoute', () => {
       isLoading: true,
       login: vi.fn(),
       logout: vi.fn(),
+      clearUser: vi.fn(),
       checkAuth: vi.fn(),
+      updateUser: vi.fn(),
     })
     vi.mocked(sessionHelper.isLikelyLoggedIn).mockReturnValue(false)
 
@@ -57,13 +59,15 @@ describe('PublicOnlyRoute', () => {
         email: 'test@example.com',
         username: 'testuser',
         isVerified: true,
-        createdAt: new Date(),
+        createdAt: '2024-01-01T00:00:00.000Z',
       },
       isAuthenticated: true,
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
+      clearUser: vi.fn(),
       checkAuth: vi.fn(),
+      updateUser: vi.fn(),
     })
     vi.mocked(sessionHelper.isLikelyLoggedIn).mockReturnValue(true)
 
@@ -85,7 +89,9 @@ describe('PublicOnlyRoute', () => {
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
+      clearUser: vi.fn(),
       checkAuth: vi.fn(),
+      updateUser: vi.fn(),
     })
     vi.mocked(sessionHelper.isLikelyLoggedIn).mockReturnValue(false)
 
@@ -108,7 +114,9 @@ describe('PublicOnlyRoute', () => {
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
+      clearUser: vi.fn(),
       checkAuth: mockCheckAuth,
+      updateUser: vi.fn(),
     })
     vi.mocked(sessionHelper.isLikelyLoggedIn).mockReturnValue(false)
 
@@ -132,7 +140,9 @@ describe('PublicOnlyRoute', () => {
       isLoading: false,
       login: vi.fn(),
       logout: vi.fn(),
+      clearUser: vi.fn(),
       checkAuth: mockCheckAuth,
+      updateUser: vi.fn(),
     })
     vi.mocked(sessionHelper.isLikelyLoggedIn).mockReturnValue(true)
 

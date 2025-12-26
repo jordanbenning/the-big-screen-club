@@ -18,7 +18,13 @@ export function requireAuth(
 
   void (async () => {
     try {
-      const user = await authService.getUserById(req.session.userId)
+      const userId = req.session.userId
+      if (userId === undefined || userId === null || userId === '') {
+        res.status(401).json({ error: 'Unauthorized' })
+        return
+      }
+
+      const user = await authService.getUserById(userId)
 
       if (user === null) {
         req.session.userId = undefined
@@ -47,10 +53,13 @@ export function optionalAuth(
   ) {
     void (async () => {
       try {
-        const user = await authService.getUserById(req.session.userId)
+        const userId = req.session.userId
+        if (userId !== undefined && userId !== null && userId !== '') {
+          const user = await authService.getUserById(userId)
 
-        if (user !== null) {
-          ;(req as Request & { user: typeof user }).user = user
+          if (user !== null) {
+            ;(req as Request & { user: typeof user }).user = user
+          }
         }
       } catch {
         // Silently fail for optional auth

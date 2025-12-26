@@ -15,10 +15,13 @@ export class AuthService {
     password: string,
     username: string
   ): Promise<UserResponse> {
-    // Check if user already exists
+    // Check if user already exists (case-insensitive username check)
     const existingUser = await prisma.user.findFirst({
       where: {
-        OR: [{ email }, { username }],
+        OR: [
+          { email },
+          { username: { equals: username, mode: 'insensitive' } },
+        ],
       },
     })
 
@@ -110,11 +113,11 @@ export class AuthService {
     // Determine if input is email (contains @) or username
     const isEmail = emailOrUsername.includes('@')
 
-    // Find user by email or username
+    // Find user by email or username (case-insensitive for username)
     const user = await prisma.user.findFirst({
       where: isEmail
         ? { email: emailOrUsername }
-        : { username: emailOrUsername },
+        : { username: { equals: emailOrUsername, mode: 'insensitive' } },
     })
 
     if (user === null) {
@@ -275,7 +278,12 @@ export class AuthService {
             {
               OR: [
                 updates.username !== undefined
-                  ? { username: updates.username }
+                  ? {
+                      username: {
+                        equals: updates.username,
+                        mode: 'insensitive' as const,
+                      },
+                    }
                   : {},
                 updates.email !== undefined ? { email: updates.email } : {},
               ].filter((condition) => Object.keys(condition).length > 0),
@@ -287,7 +295,7 @@ export class AuthService {
       if (existingUser !== null) {
         if (
           updates.username !== undefined &&
-          existingUser.username === updates.username
+          existingUser.username.toLowerCase() === updates.username.toLowerCase()
         ) {
           throw new Error('Username already taken')
         }
@@ -376,8 +384,8 @@ export class AuthService {
     email: string
     profilePictureUrl: string | null
   } | null> {
-    const user = await prisma.user.findUnique({
-      where: { username },
+    const user = await prisma.user.findFirst({
+      where: { username: { equals: username, mode: 'insensitive' } },
       select: {
         id: true,
         username: true,

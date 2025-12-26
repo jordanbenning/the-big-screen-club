@@ -10,6 +10,7 @@
     "build": "pnpm -r build",
     "build:frontend": "pnpm --filter big-screen-club-frontend build",
     "build:backend": "pnpm --filter big-screen-club-backend build",
+    "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint:fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
@@ -32,11 +33,21 @@
     "prettier": "^3.7.4"
   },
   "lint-staged": {
-    "frontend/**/*.{ts,tsx,js,jsx}": [
+    "frontend/**/*.{ts,tsx}": [
+      "bash -c 'cd frontend && pnpm typecheck'",
       "bash -c 'cd frontend && eslint --fix --max-warnings 0 $0' --",
       "prettier --write"
     ],
-    "backend/**/*.{ts,js}": [
+    "frontend/**/*.{js,jsx}": [
+      "bash -c 'cd frontend && eslint --fix --max-warnings 0 $0' --",
+      "prettier --write"
+    ],
+    "backend/**/*.ts": [
+      "bash -c 'cd backend && pnpm typecheck'",
+      "bash -c 'cd backend && eslint --fix --max-warnings 0 $0' --",
+      "prettier --write"
+    ],
+    "backend/**/*.js": [
       "bash -c 'cd backend && eslint --fix --max-warnings 0 $0' --",
       "prettier --write"
     ],

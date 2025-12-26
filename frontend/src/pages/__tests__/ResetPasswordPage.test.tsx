@@ -47,7 +47,9 @@ describe('ResetPasswordPage', () => {
       isLoading: false,
       login: mockLogin,
       logout: vi.fn(),
+      clearUser: vi.fn(),
       checkAuth: vi.fn(),
+      updateUser: vi.fn(),
     })
   })
 
