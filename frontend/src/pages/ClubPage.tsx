@@ -610,8 +610,22 @@ function ClubPage() {
                 <div>
                   <h4>Your Turn to Suggest Movies!</h4>
                   <p style={{ color: '#666' }}>
-                    Select movies for the voting round.
+                    Select{' '}
+                    {currentMovieState.activeVotingRound.suggestions.length > 0
+                      ? `${4 - currentMovieState.activeVotingRound.suggestions.length} more ${4 - currentMovieState.activeVotingRound.suggestions.length === 1 ? 'movie' : 'movies'}`
+                      : '4 movies'}{' '}
+                    for the voting round.
                   </p>
+                  {currentMovieState.activeVotingRound.suggestions.length >
+                    0 && (
+                    <div style={{ marginTop: '10px', marginBottom: '15px' }}>
+                      <strong>
+                        Selected so far:{' '}
+                        {currentMovieState.activeVotingRound.suggestions.length}
+                        /4
+                      </strong>
+                    </div>
+                  )}
                   <button
                     onClick={() => setShowMovieSearchModal(true)}
                     disabled={movieActionLoading}
@@ -625,7 +639,9 @@ function ClubPage() {
                       fontWeight: 'bold',
                     }}
                   >
-                    Select Movies
+                    {currentMovieState.activeVotingRound.suggestions.length > 0
+                      ? 'Continue Selecting Movies'
+                      : 'Select Movies'}
                   </button>
                 </div>
               ) : (
@@ -899,15 +915,23 @@ function ClubPage() {
         isOpen={showMovieSearchModal}
         onClose={() => {
           setShowMovieSearchModal(false)
-          if (
-            selectedMovies.length ===
-            (currentMovieState?.activeVotingRound?.suggestions.length || 4)
-          ) {
+          // Calculate how many movies still need to be selected
+          const existingSuggestions =
+            currentMovieState?.activeVotingRound?.suggestions.length || 0
+          const remainingNeeded = 4 - existingSuggestions
+
+          // Only auto-submit if user selected exactly the remaining number needed
+          if (selectedMovies.length === remainingNeeded) {
             void handleSubmitMovieSuggestions()
+          } else {
+            // Clear selections if user cancelled or didn't complete
+            setSelectedMovies([])
           }
         }}
         onSelect={setSelectedMovies}
-        maxSelections={4}
+        maxSelections={
+          4 - (currentMovieState?.activeVotingRound?.suggestions.length || 0)
+        }
         selectedMovies={selectedMovies}
       />
 

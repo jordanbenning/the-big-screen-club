@@ -1097,7 +1097,18 @@ export const movieService = {
     }
 
     // Get current turn
-    const currentTurn = await this.getCurrentTurn(clubId)
+    // If there's an active voting round, currentTurn represents the suggester of that round
+    // Otherwise, it represents whose turn it is next
+    let currentTurn
+    if (activeVotingRound !== undefined) {
+      currentTurn = {
+        userId: activeVotingRound.suggestedByUserId,
+        username: activeVotingRound.suggestedByUsername,
+        order: 0, // Not relevant for active rounds
+      }
+    } else {
+      currentTurn = await this.getCurrentTurn(clubId)
+    }
 
     return {
       currentMovie:
