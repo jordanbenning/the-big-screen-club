@@ -1,0 +1,54 @@
+# Cursor AI Rules for The Big Screen Club
+
+## Git Commit Guidelines
+
+### NEVER Bypass Git Hooks
+- **NEVER** use `--no-verify`, `--no-gpg-sign`, or any flag that skips git hooks when committing
+- Pre-commit hooks exist for a reason (linting, type checking, tests)
+- If the pre-commit hook fails:
+  1. Read and understand the errors
+  2. Fix all linting errors shown in the output
+  3. Fix all type errors
+  4. Fix all test failures
+  5. Stage the fixes and retry the commit
+- Do not commit until all hooks pass successfully
+- If fixing the errors would take too long or is complex, inform the user and ask for guidance
+
+### Handling Pre-commit Hook Failures
+When a pre-commit hook fails:
+1. **Read the error output carefully** - it shows exactly what needs to be fixed
+2. **Fix ESLint errors** by:
+   - Removing unused variables
+   - Adding proper type assertions
+   - Fixing strict boolean expression checks
+   - Following the project's linting rules
+3. **Fix TypeScript errors** by:
+   - Adding proper type definitions
+   - Fixing type mismatches
+   - Ensuring all imports are correct
+4. **Stage the fixes** with `git add`
+5. **Retry the commit** WITHOUT any bypass flags
+
+### Example: DO NOT DO THIS
+```bash
+# WRONG - Never bypass hooks
+git commit --no-verify -m "message"
+git commit -n -m "message"
+```
+
+### Example: DO THIS INSTEAD
+```bash
+# RIGHT - Fix the errors, then commit normally
+# 1. Fix the linting/type errors in the files
+# 2. Stage the fixes
+git add .
+# 3. Commit normally (hooks will run)
+git commit -m "message"
+```
+
+## Code Quality Standards
+- All commits must pass linting
+- All commits must pass type checking
+- Maintain the existing code style and patterns
+- No warnings should be introduced
+- Keep the codebase clean and maintainable
