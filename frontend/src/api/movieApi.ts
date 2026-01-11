@@ -178,9 +178,11 @@ export const movieApi = {
   /**
    * Trigger reveal of voting results
    */
-  async triggerReveal(
-    roundId: string
-  ): Promise<{ status: 'winner' | 'tie'; winnerId?: string; tiedMovieIds?: string[] }> {
+  async triggerReveal(roundId: string): Promise<{
+    status: 'winner' | 'tie'
+    winnerId?: string
+    tiedMovieIds?: string[]
+  }> {
     const response = await fetch(
       `${API_URL}/api/movies/rounds/${roundId}/reveal`,
       {
@@ -320,4 +322,3 @@ export const movieApi = {
     return (await response.json()) as VotingRound
   },
 }
-

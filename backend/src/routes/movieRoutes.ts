@@ -13,33 +13,39 @@ router.use(requireAuth)
  * GET /api/movies/search
  * Search for movies on TMDB
  */
-router.get('/search', async (req: Request, res: Response): Promise<void> => {
-  try {
-    const query = req.query.q as string
+router.get('/search', (req: Request, res: Response) => {
+  void (async () => {
+    try {
+      const query = req.query.q as string
 
-    if (!query) {
-      res.status(400).json({ error: 'Query parameter is required' })
-      return
+      if (typeof query !== 'string' || query.trim() === '') {
+        res.status(400).json({ error: 'Query parameter is required' })
+        return
+      }
+
+      const results = await tmdbService.searchMovies(query)
+      res.json(results)
+    } catch (error) {
+      console.error('Error searching movies:', error)
+      res.status(500).json({ error: 'Failed to search movies' })
     }
-
-    const results = await tmdbService.searchMovies(query)
-    res.json(results)
-  } catch (error) {
-    console.error('Error searching movies:', error)
-    res.status(500).json({ error: 'Failed to search movies' })
-  }
+  })()
 })
 
 /**
  * POST /api/movies/rounds/:roundId/suggestions
  * Add movie suggestions to a voting round
  */
-router.post(
-  '/rounds/:roundId/suggestions',
-  async (req: Request, res: Response): Promise<void> => {
+router.post('/rounds/:roundId/suggestions', (req: Request, res: Response) => {
+  void (async () => {
     try {
       const { roundId } = req.params
-      const userId = req.session.userId!
+      const userId = req.session.userId
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
+
       const { movies } = req.body as {
         movies: Array<{
           tmdbId: number
@@ -60,22 +66,28 @@ router.post(
     } catch (error) {
       console.error('Error adding movie suggestions:', error)
       const message =
-        error instanceof Error ? error.message : 'Failed to add movie suggestions'
+        error instanceof Error
+          ? error.message
+          : 'Failed to add movie suggestions'
       res.status(400).json({ error: message })
     }
-  }
-)
+  })()
+})
 
 /**
  * POST /api/movies/rounds/:roundId/votes
  * Submit a ranked vote for a voting round
  */
-router.post(
-  '/rounds/:roundId/votes',
-  async (req: Request, res: Response): Promise<void> => {
+router.post('/rounds/:roundId/votes', (req: Request, res: Response) => {
+  void (async () => {
     try {
       const { roundId } = req.params
-      const userId = req.session.userId!
+      const userId = req.session.userId
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
+
       const { rankings } = req.body as { rankings: Record<string, number> }
 
       if (typeof rankings !== 'object' || rankings === null) {
@@ -91,19 +103,22 @@ router.post(
         error instanceof Error ? error.message : 'Failed to submit vote'
       res.status(400).json({ error: message })
     }
-  }
-)
+  })()
+})
 
 /**
  * POST /api/movies/rounds/:roundId/reveal
  * Trigger reveal of voting results
  */
-router.post(
-  '/rounds/:roundId/reveal',
-  async (req: Request, res: Response): Promise<void> => {
+router.post('/rounds/:roundId/reveal', (req: Request, res: Response) => {
+  void (async () => {
     try {
       const { roundId } = req.params
-      const userId = req.session.userId!
+      const userId = req.session.userId
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
 
       const result = await movieService.triggerReveal(roundId, userId)
       res.json(result)
@@ -113,22 +128,29 @@ router.post(
         error instanceof Error ? error.message : 'Failed to trigger reveal'
       res.status(400).json({ error: message })
     }
-  }
-)
+  })()
+})
 
 /**
  * POST /api/movies/rounds/:roundId/tie-break
  * Break a tie by selecting a movie
  */
-router.post(
-  '/rounds/:roundId/tie-break',
-  async (req: Request, res: Response): Promise<void> => {
+router.post('/rounds/:roundId/tie-break', (req: Request, res: Response) => {
+  void (async () => {
     try {
       const { roundId } = req.params
-      const userId = req.session.userId!
+      const userId = req.session.userId
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
+
       const { movieSuggestionId } = req.body as { movieSuggestionId: string }
 
-      if (!movieSuggestionId) {
+      if (
+        typeof movieSuggestionId !== 'string' ||
+        movieSuggestionId.trim() === ''
+      ) {
         res.status(400).json({ error: 'movieSuggestionId is required' })
         return
       }
@@ -141,22 +163,26 @@ router.post(
         error instanceof Error ? error.message : 'Failed to break tie'
       res.status(400).json({ error: message })
     }
-  }
-)
+  })()
+})
 
 /**
  * POST /api/movies/rounds/:roundId/select
  * Select the winning movie and set watch-by date
  */
-router.post(
-  '/rounds/:roundId/select',
-  async (req: Request, res: Response): Promise<void> => {
+router.post('/rounds/:roundId/select', (req: Request, res: Response) => {
+  void (async () => {
     try {
       const { roundId } = req.params
-      const userId = req.session.userId!
+      const userId = req.session.userId
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
+
       const { watchByDate } = req.body as { watchByDate: string }
 
-      if (!watchByDate) {
+      if (typeof watchByDate !== 'string' || watchByDate.trim() === '') {
         res.status(400).json({ error: 'watchByDate is required' })
         return
       }
@@ -175,41 +201,50 @@ router.post(
         error instanceof Error ? error.message : 'Failed to select movie'
       res.status(400).json({ error: message })
     }
-  }
-)
+  })()
+})
 
 /**
  * PUT /api/movies/selected/:selectedId/watched
  * Mark a movie as watched
  */
-router.put(
-  '/selected/:selectedId/watched',
-  async (req: Request, res: Response): Promise<void> => {
+router.put('/selected/:selectedId/watched', (req: Request, res: Response) => {
+  void (async () => {
     try {
       const { selectedId } = req.params
-      const userId = req.session.userId!
+      const userId = req.session.userId
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
 
       await movieService.markAsWatched(selectedId, userId)
       res.json({ message: 'Movie marked as watched' })
     } catch (error) {
       console.error('Error marking movie as watched:', error)
       const message =
-        error instanceof Error ? error.message : 'Failed to mark movie as watched'
+        error instanceof Error
+          ? error.message
+          : 'Failed to mark movie as watched'
       res.status(400).json({ error: message })
     }
-  }
-)
+  })()
+})
 
 /**
  * POST /api/movies/selected/:selectedId/ratings
  * Submit a rating for a movie
  */
-router.post(
-  '/selected/:selectedId/ratings',
-  async (req: Request, res: Response): Promise<void> => {
+router.post('/selected/:selectedId/ratings', (req: Request, res: Response) => {
+  void (async () => {
     try {
       const { selectedId } = req.params
-      const userId = req.session.userId!
+      const userId = req.session.userId
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
+
       const { rating } = req.body as { rating: number }
 
       if (typeof rating !== 'number') {
@@ -225,19 +260,22 @@ router.post(
         error instanceof Error ? error.message : 'Failed to submit rating'
       res.status(400).json({ error: message })
     }
-  }
-)
+  })()
+})
 
 /**
  * GET /api/movies/rounds/:roundId
  * Get detailed info about a voting round
  */
-router.get(
-  '/rounds/:roundId',
-  async (req: Request, res: Response): Promise<void> => {
+router.get('/rounds/:roundId', (req: Request, res: Response) => {
+  void (async () => {
     try {
       const { roundId } = req.params
-      const userId = req.session.userId!
+      const userId = req.session.userId
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
 
       const round = await movieService.getVotingRoundDetails(roundId, userId)
       res.json(round)
@@ -249,8 +287,7 @@ router.get(
           : 'Failed to get voting round details'
       res.status(400).json({ error: message })
     }
-  }
-)
+  })()
+})
 
 export default router
-

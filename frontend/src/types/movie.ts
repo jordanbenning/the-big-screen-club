@@ -105,4 +105,3 @@ export interface CurrentMovieState {
 export interface ClubSettings {
   movieSuggestionsCount: number
 }
-

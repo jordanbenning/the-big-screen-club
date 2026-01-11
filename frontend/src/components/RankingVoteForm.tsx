@@ -4,7 +4,7 @@ import type { MovieSuggestion, VoteRankings } from '../types/movie'
 
 interface RankingVoteFormProps {
   suggestions: MovieSuggestion[]
-  onSubmit: (rankings: VoteRankings) => void
+  onSubmit: (_rankings: VoteRankings) => void
   disabled?: boolean
 }
 
@@ -53,9 +53,9 @@ const RankingVoteForm = ({
         Rank the Movies (Drag to Reorder)
       </h3>
       <p style={{ color: '#666', marginBottom: '20px' }}>
-        Drag movies to rank them from best (#1) to worst (#{suggestions.length}).
-        Your #1 choice will receive 1 point, #2 will receive 2 points, etc. The
-        movie with the lowest total points wins!
+        Drag movies to rank them from best (#1) to worst (#{suggestions.length}
+        ). Your #1 choice will receive 1 point, #2 will receive 2 points, etc.
+        The movie with the lowest total points wins!
       </p>
 
       <div
@@ -112,8 +112,7 @@ const RankingVoteForm = ({
 
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                {movie.title}{' '}
-                {movie.releaseYear && `(${movie.releaseYear})`}
+                {movie.title} {movie.releaseYear && `(${movie.releaseYear})`}
               </div>
               {movie.overview && (
                 <div
@@ -154,4 +153,3 @@ const RankingVoteForm = ({
 }
 
 export default RankingVoteForm
-

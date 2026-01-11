@@ -177,7 +177,8 @@ function MovieHistoryPage() {
           }}
         >
           <p style={{ fontSize: '1.1rem', color: '#666', margin: 0 }}>
-            No movies watched yet. Start a voting round to choose your first movie!
+            No movies watched yet. Start a voting round to choose your first
+            movie!
           </p>
         </div>
       ) : (
@@ -193,7 +194,9 @@ function MovieHistoryPage() {
               }}
             >
               {/* Movie Header */}
-              <div style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}>
+              <div
+                style={{ display: 'flex', gap: '20px', marginBottom: '15px' }}
+              >
                 {movie.movie.posterPath && (
                   <img
                     src={`https://image.tmdb.org/t/p/w185${movie.movie.posterPath}`}
@@ -218,17 +221,30 @@ function MovieHistoryPage() {
                     <div style={{ marginBottom: '5px' }}>
                       <strong>Watched:</strong>{' '}
                       {movie.watchedAt
-                        ? new Date(movie.watchedAt).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric',
-                          })
+                        ? new Date(movie.watchedAt).toLocaleDateString(
+                            'en-US',
+                            {
+                              year: 'numeric',
+                              month: 'long',
+                              day: 'numeric',
+                            }
+                          )
                         : 'Not yet watched'}
                     </div>
                     {movie.averageRating !== null && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                        }}
+                      >
                         <strong>Average Rating:</strong>
-                        <StarRating value={movie.averageRating} readonly size="small" />
+                        <StarRating
+                          value={movie.averageRating}
+                          readonly
+                          size="small"
+                        />
                         <span>({movie.averageRating.toFixed(1)})</span>
                       </div>
                     )}
@@ -250,7 +266,9 @@ function MovieHistoryPage() {
                       fontWeight: 'bold',
                     }}
                   >
-                    {expandedMovie === movie.id ? 'Hide Details' : 'Show Details'}
+                    {expandedMovie === movie.id
+                      ? 'Hide Details'
+                      : 'Show Details'}
                   </button>
                 </div>
               </div>
@@ -266,7 +284,9 @@ function MovieHistoryPage() {
                   {/* Voting Results */}
                   <div style={{ marginBottom: '20px' }}>
                     <h4 style={{ marginTop: 0 }}>Voting Results</h4>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                    <div
+                      style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}
+                    >
                       {movie.votes.map((vote, idx) => (
                         <div
                           key={idx}
@@ -280,7 +300,9 @@ function MovieHistoryPage() {
                           <strong>{vote.username}</strong>
                           <div style={{ marginTop: '5px' }}>
                             {Object.entries(vote.rankings)
-                              .sort(([, a], [, b]) => (a as number) - (b as number))
+                              .sort(
+                                ([, a], [, b]) => (a as number) - (b as number)
+                              )
                               .map(([, rank], i) => (
                                 <div key={i}>#{rank}</div>
                               ))}
@@ -294,7 +316,13 @@ function MovieHistoryPage() {
                   <div style={{ marginBottom: '15px' }}>
                     <h4 style={{ marginTop: 0 }}>Member Ratings</h4>
                     {movie.ratings.length > 0 ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '10px',
+                        }}
+                      >
                         {movie.ratings.map((rating, idx) => (
                           <div
                             key={idx}
@@ -310,7 +338,11 @@ function MovieHistoryPage() {
                             <strong style={{ minWidth: '150px' }}>
                               {rating.username}
                             </strong>
-                            <StarRating value={rating.rating} readonly size="small" />
+                            <StarRating
+                              value={rating.rating}
+                              readonly
+                              size="small"
+                            />
                           </div>
                         ))}
                       </div>
@@ -348,7 +380,9 @@ function MovieHistoryPage() {
                             style={{
                               padding: '8px 16px',
                               backgroundColor:
-                                submitLoading || newRating === 0 ? '#ccc' : '#28a745',
+                                submitLoading || newRating === 0
+                                  ? '#ccc'
+                                  : '#28a745',
                               color: 'white',
                               border: 'none',
                               borderRadius: '5px',
@@ -418,4 +452,3 @@ function MovieHistoryPage() {
 }
 
 export default MovieHistoryPage
-

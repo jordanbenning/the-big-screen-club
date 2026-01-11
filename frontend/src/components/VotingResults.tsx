@@ -6,7 +6,11 @@ interface VotingResultsProps {
   winnerId?: string
 }
 
-const VotingResults = ({ suggestions, votes, winnerId }: VotingResultsProps) => {
+const VotingResults = ({
+  suggestions,
+  votes,
+  winnerId,
+}: VotingResultsProps) => {
   // Calculate scores for each movie
   const scores: Record<string, number> = {}
   suggestions.forEach((s) => {
@@ -51,7 +55,9 @@ const VotingResults = ({ suggestions, votes, winnerId }: VotingResultsProps) => 
                 backgroundColor: isWinner ? '#d4edda' : 'white',
               }}
             >
-              <div style={{ display: 'flex', gap: '15px', alignItems: 'start' }}>
+              <div
+                style={{ display: 'flex', gap: '15px', alignItems: 'start' }}
+              >
                 <div
                   style={{
                     fontSize: '2rem',
@@ -106,7 +112,13 @@ const VotingResults = ({ suggestions, votes, winnerId }: VotingResultsProps) => 
               </div>
 
               {/* Individual Rankings */}
-              <div style={{ marginTop: '15px', paddingTop: '15px', borderTop: '1px solid #ddd' }}>
+              <div
+                style={{
+                  marginTop: '15px',
+                  paddingTop: '15px',
+                  borderTop: '1px solid #ddd',
+                }}
+              >
                 <div style={{ fontWeight: 'bold', marginBottom: '8px' }}>
                   Individual Rankings:
                 </div>
@@ -155,4 +167,3 @@ const VotingResults = ({ suggestions, votes, winnerId }: VotingResultsProps) => 
 }
 
 export default VotingResults
-

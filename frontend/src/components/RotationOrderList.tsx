@@ -5,7 +5,7 @@ import type { ClubRotationMember } from '../types/movie'
 interface RotationOrderListProps {
   rotation: ClubRotationMember[]
   editable?: boolean
-  onUpdate?: (userIds: string[]) => void
+  onUpdate?: (_userIds: string[]) => void
   onRandomize?: () => void
 }
 
@@ -95,8 +95,8 @@ const RotationOrderList = ({
 
       {editable && (
         <p style={{ color: '#666', marginBottom: '15px', fontSize: '0.9rem' }}>
-          Drag members to reorder the rotation. The person at the top will be next
-          to suggest movies.
+          Drag members to reorder the rotation. The person at the top will be
+          next to suggest movies.
         </p>
       )}
 
@@ -197,4 +197,3 @@ const RotationOrderList = ({
 }
 
 export default RotationOrderList
-

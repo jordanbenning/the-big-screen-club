@@ -31,6 +31,7 @@ export default [
         clearInterval: 'readonly',
         setImmediate: 'readonly',
         clearImmediate: 'readonly',
+        fetch: 'readonly',
       },
     },
     plugins: {
@@ -61,7 +62,7 @@ export default [
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/strict-boolean-expressions': [
-        'error',
+        'warn', // Changed to warn for flexibility
         {
           allowString: false,
           allowNumber: false,

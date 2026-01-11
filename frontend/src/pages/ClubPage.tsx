@@ -97,7 +97,8 @@ function ClubPage() {
       console.error('Error starting voting round:', err)
       setAlert({
         type: 'error',
-        message: err instanceof Error ? err.message : 'Failed to start voting round',
+        message:
+          err instanceof Error ? err.message : 'Failed to start voting round',
       })
     } finally {
       setMovieActionLoading(false)
@@ -136,7 +137,10 @@ function ClubPage() {
     if (!id || !currentMovieState?.activeVotingRound) return
     setMovieActionLoading(true)
     try {
-      await movieApi.submitVote(currentMovieState.activeVotingRound.id, rankings)
+      await movieApi.submitVote(
+        currentMovieState.activeVotingRound.id,
+        rankings
+      )
       await refreshMovieState(id)
       setAlert({ type: 'success', message: 'Vote submitted successfully!' })
     } catch (err) {
@@ -166,7 +170,8 @@ function ClubPage() {
       console.error('Error revealing results:', err)
       setAlert({
         type: 'error',
-        message: err instanceof Error ? err.message : 'Failed to reveal results',
+        message:
+          err instanceof Error ? err.message : 'Failed to reveal results',
       })
     } finally {
       setMovieActionLoading(false)
@@ -202,7 +207,10 @@ function ClubPage() {
       )
       await refreshMovieState(id)
       setWatchByDate('')
-      setAlert({ type: 'success', message: 'Movie selected with watch-by date!' })
+      setAlert({
+        type: 'success',
+        message: 'Movie selected with watch-by date!',
+      })
     } catch (err) {
       console.error('Error selecting movie:', err)
       setAlert({
@@ -225,7 +233,8 @@ function ClubPage() {
       console.error('Error marking as watched:', err)
       setAlert({
         type: 'error',
-        message: err instanceof Error ? err.message : 'Failed to mark as watched',
+        message:
+          err instanceof Error ? err.message : 'Failed to mark as watched',
       })
     } finally {
       setMovieActionLoading(false)
@@ -524,7 +533,7 @@ function ClubPage() {
         }}
       >
         <h3 style={{ marginTop: 0 }}>🎬 Movie Club Status</h3>
-        
+
         {/* Current Movie to Watch */}
         {currentMovieState?.currentMovie && (
           <div style={{ marginBottom: '20px' }}>
@@ -596,41 +605,38 @@ function ClubPage() {
         {currentMovieState?.activeVotingRound && (
           <div style={{ marginBottom: '20px' }}>
             {/* SUGGESTING Status - waiting for suggester to add movies */}
-            {currentMovieState.activeVotingRound.status === 'SUGGESTING' && (
-              <>
-                {currentMovieState.currentTurn?.isCurrentUser ? (
-                  <div>
-                    <h4>Your Turn to Suggest Movies!</h4>
-                    <p style={{ color: '#666' }}>
-                      Select movies for the voting round.
-                    </p>
-                    <button
-                      onClick={() => setShowMovieSearchModal(true)}
-                      disabled={movieActionLoading}
-                      style={{
-                        padding: '12px 24px',
-                        backgroundColor: movieActionLoading ? '#ccc' : '#007bff',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: movieActionLoading ? 'not-allowed' : 'pointer',
-                        fontWeight: 'bold',
-                      }}
-                    >
-                      Select Movies
-                    </button>
-                  </div>
-                ) : (
-                  <div>
-                    <h4>Waiting for Movie Suggestions</h4>
-                    <p style={{ color: '#666' }}>
-                      {currentMovieState.activeVotingRound.suggestedByUsername} is
-                      selecting movies for this round.
-                    </p>
-                  </div>
-                )}
-              </>
-            )}
+            {currentMovieState.activeVotingRound.status === 'SUGGESTING' &&
+              (currentMovieState.currentTurn?.isCurrentUser ? (
+                <div>
+                  <h4>Your Turn to Suggest Movies!</h4>
+                  <p style={{ color: '#666' }}>
+                    Select movies for the voting round.
+                  </p>
+                  <button
+                    onClick={() => setShowMovieSearchModal(true)}
+                    disabled={movieActionLoading}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: movieActionLoading ? '#ccc' : '#007bff',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '5px',
+                      cursor: movieActionLoading ? 'not-allowed' : 'pointer',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Select Movies
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <h4>Waiting for Movie Suggestions</h4>
+                  <p style={{ color: '#666' }}>
+                    {currentMovieState.activeVotingRound.suggestedByUsername} is
+                    selecting movies for this round.
+                  </p>
+                </div>
+              ))}
 
             {/* VOTING Status */}
             {currentMovieState.activeVotingRound.status === 'VOTING' && (
@@ -646,37 +652,45 @@ function ClubPage() {
                       <div
                         style={{
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                          gridTemplateColumns:
+                            'repeat(auto-fill, minmax(150px, 1fr))',
                           gap: '15px',
                           marginTop: '10px',
                         }}
                       >
-                        {currentMovieState.activeVotingRound.suggestions.map((s) => (
-                          <div
-                            key={s.id}
-                            style={{
-                              textAlign: 'center',
-                              padding: '10px',
-                              backgroundColor: 'white',
-                              borderRadius: '8px',
-                            }}
-                          >
-                            {s.posterPath && (
-                              <img
-                                src={`https://image.tmdb.org/t/p/w185${s.posterPath}`}
-                                alt={s.title}
+                        {currentMovieState.activeVotingRound.suggestions.map(
+                          (s) => (
+                            <div
+                              key={s.id}
+                              style={{
+                                textAlign: 'center',
+                                padding: '10px',
+                                backgroundColor: 'white',
+                                borderRadius: '8px',
+                              }}
+                            >
+                              {s.posterPath && (
+                                <img
+                                  src={`https://image.tmdb.org/t/p/w185${s.posterPath}`}
+                                  alt={s.title}
+                                  style={{
+                                    width: '100%',
+                                    borderRadius: '4px',
+                                    marginBottom: '5px',
+                                  }}
+                                />
+                              )}
+                              <div
                                 style={{
-                                  width: '100%',
-                                  borderRadius: '4px',
-                                  marginBottom: '5px',
+                                  fontSize: '0.9rem',
+                                  fontWeight: 'bold',
                                 }}
-                              />
-                            )}
-                            <div style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>
-                              {s.title}
+                              >
+                                {s.title}
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          )
+                        )}
                       </div>
                     </div>
                   </div>
@@ -692,7 +706,9 @@ function ClubPage() {
                   <div>
                     <h4>Vote on Movies</h4>
                     <RankingVoteForm
-                      suggestions={currentMovieState.activeVotingRound.suggestions}
+                      suggestions={
+                        currentMovieState.activeVotingRound.suggestions
+                      }
                       onSubmit={(rankings) => {
                         void handleSubmitVote(rankings)
                       }}
@@ -702,7 +718,8 @@ function ClubPage() {
                 )}
 
                 {/* Reveal Button for Suggester or Admin */}
-                {(currentMovieState.currentTurn?.isCurrentUser || club.role === 'ADMIN') && (
+                {(currentMovieState.currentTurn?.isCurrentUser ||
+                  club.role === 'ADMIN') && (
                   <button
                     onClick={() => {
                       void handleReveal()
@@ -727,7 +744,8 @@ function ClubPage() {
 
             {/* REVEALED or TIE_BREAKING Status */}
             {(currentMovieState.activeVotingRound.status === 'REVEALED' ||
-              currentMovieState.activeVotingRound.status === 'TIE_BREAKING') && (
+              currentMovieState.activeVotingRound.status ===
+                'TIE_BREAKING') && (
               <div>
                 <VotingResults
                   suggestions={currentMovieState.activeVotingRound.suggestions}
@@ -740,7 +758,13 @@ function ClubPage() {
                   currentMovieState.activeVotingRound.winnerMovieId && (
                     <div style={{ marginTop: '20px' }}>
                       <h4>Set Watch-By Date</h4>
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          gap: '10px',
+                          alignItems: 'center',
+                        }}
+                      >
                         <input
                           type="date"
                           value={watchByDate}
@@ -762,7 +786,9 @@ function ClubPage() {
                           style={{
                             padding: '10px 20px',
                             backgroundColor:
-                              movieActionLoading || !watchByDate ? '#ccc' : '#007bff',
+                              movieActionLoading || !watchByDate
+                                ? '#ccc'
+                                : '#007bff',
                             color: 'white',
                             border: 'none',
                             borderRadius: '5px',
@@ -784,46 +810,48 @@ function ClubPage() {
         )}
 
         {/* No Active Round - Show Start Button or Wait Message */}
-        {!currentMovieState?.currentMovie && !currentMovieState?.activeVotingRound && (
-          <div>
-            {currentMovieState?.currentTurn?.isCurrentUser || club.role === 'ADMIN' ? (
-              <>
-                <h4>Start a New Voting Round</h4>
-                <p style={{ color: '#666' }}>
-                  {currentMovieState?.currentTurn?.isCurrentUser
-                    ? "It's your turn to suggest movies!"
-                    : 'As an admin, you can start a voting round.'}
-                </p>
-                <button
-                  onClick={() => {
-                    void handleStartVotingRound()
-                  }}
-                  disabled={movieActionLoading}
-                  style={{
-                    padding: '12px 24px',
-                    backgroundColor: movieActionLoading ? '#ccc' : '#28a745',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: movieActionLoading ? 'not-allowed' : 'pointer',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {movieActionLoading ? 'Starting...' : 'Start Voting Round'}
-                </button>
-              </>
-            ) : (
-              <>
-                <h4>Waiting for Next Movie</h4>
-                <p style={{ color: '#666' }}>
-                  {currentMovieState?.currentTurn
-                    ? `Waiting for ${currentMovieState.currentTurn.username} to start the next voting round.`
-                    : 'Waiting for an admin to choose the next movie or start a movie vote.'}
-                </p>
-              </>
-            )}
-          </div>
-        )}
+        {!currentMovieState?.currentMovie &&
+          !currentMovieState?.activeVotingRound && (
+            <div>
+              {currentMovieState?.currentTurn?.isCurrentUser ||
+              club.role === 'ADMIN' ? (
+                <>
+                  <h4>Start a New Voting Round</h4>
+                  <p style={{ color: '#666' }}>
+                    {currentMovieState?.currentTurn?.isCurrentUser
+                      ? "It's your turn to suggest movies!"
+                      : 'As an admin, you can start a voting round.'}
+                  </p>
+                  <button
+                    onClick={() => {
+                      void handleStartVotingRound()
+                    }}
+                    disabled={movieActionLoading}
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: movieActionLoading ? '#ccc' : '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '5px',
+                      cursor: movieActionLoading ? 'not-allowed' : 'pointer',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {movieActionLoading ? 'Starting...' : 'Start Voting Round'}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <h4>Waiting for Next Movie</h4>
+                  <p style={{ color: '#666' }}>
+                    {currentMovieState?.currentTurn
+                      ? `Waiting for ${currentMovieState.currentTurn.username} to start the next voting round.`
+                      : 'Waiting for an admin to choose the next movie or start a movie vote.'}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
       </div>
 
       {/* Club Details Section */}
@@ -888,10 +916,13 @@ function ClubPage() {
         <TieBreakModal
           isOpen={showTieBreakModal}
           tiedMovies={
-            currentMovieState.activeVotingRound.tiedMovies
-              ? currentMovieState.activeVotingRound.suggestions.filter((s) =>
-                  currentMovieState.activeVotingRound!.tiedMovies!.includes(s.id)
-                )
+            currentMovieState.activeVotingRound.tiedMovies &&
+            currentMovieState.activeVotingRound.suggestions
+              ? currentMovieState.activeVotingRound.suggestions.filter((s) => {
+                  const tiedMovies =
+                    currentMovieState.activeVotingRound?.tiedMovies
+                  return tiedMovies !== undefined && tiedMovies.includes(s.id)
+                })
               : []
           }
           onSelect={(movieId) => {

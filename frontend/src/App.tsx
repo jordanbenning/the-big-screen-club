@@ -11,10 +11,10 @@ import ClubMembersPage from './pages/ClubMembersPage'
 import ClubPage from './pages/ClubPage'
 import ClubSettingsPage from './pages/ClubSettingsPage'
 import Dashboard from './pages/Dashboard'
-import MovieHistoryPage from './pages/MovieHistoryPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
+import MovieHistoryPage from './pages/MovieHistoryPage'
 import NotificationsPage from './pages/NotificationsPage'
 import ProfilePage from './pages/ProfilePage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
@@ -31,105 +31,105 @@ function App() {
             <MovieProvider>
               <Header />
               <Routes>
-              <Route
-                path="/"
-                element={
-                  <PublicOnlyRoute>
-                    <LandingPage />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/signup"
-                element={
-                  <PublicOnlyRoute>
-                    <SignUpPage />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/login"
-                element={
-                  <PublicOnlyRoute>
-                    <LoginPage />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/forgot-password"
-                element={
-                  <PublicOnlyRoute>
-                    <ForgotPasswordPage />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/reset-password"
-                element={
-                  <PublicOnlyRoute>
-                    <ResetPasswordPage />
-                  </PublicOnlyRoute>
-                }
-              />
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/profile"
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/notifications"
-                element={
-                  <ProtectedRoute>
-                    <NotificationsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clubs/:id"
-                element={
-                  <ProtectedRoute>
-                    <ClubPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clubs/:id/members"
-                element={
-                  <ProtectedRoute>
-                    <ClubMembersPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clubs/:id/settings"
-                element={
-                  <ProtectedRoute>
-                    <ClubSettingsPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/clubs/:id/movies/history"
-                element={
-                  <ProtectedRoute>
-                    <MovieHistoryPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/verify-success" element={<VerifySuccess />} />
-              <Route path="/verify-error" element={<VerifyError />} />
-            </Routes>
+                <Route
+                  path="/"
+                  element={
+                    <PublicOnlyRoute>
+                      <LandingPage />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/signup"
+                  element={
+                    <PublicOnlyRoute>
+                      <SignUpPage />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/login"
+                  element={
+                    <PublicOnlyRoute>
+                      <LoginPage />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <PublicOnlyRoute>
+                      <ForgotPasswordPage />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/reset-password"
+                  element={
+                    <PublicOnlyRoute>
+                      <ResetPasswordPage />
+                    </PublicOnlyRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <ProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/notifications"
+                  element={
+                    <ProtectedRoute>
+                      <NotificationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/clubs/:id"
+                  element={
+                    <ProtectedRoute>
+                      <ClubPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/clubs/:id/members"
+                  element={
+                    <ProtectedRoute>
+                      <ClubMembersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/clubs/:id/settings"
+                  element={
+                    <ProtectedRoute>
+                      <ClubSettingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/clubs/:id/movies/history"
+                  element={
+                    <ProtectedRoute>
+                      <MovieHistoryPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route path="/verify-success" element={<VerifySuccess />} />
+                <Route path="/verify-error" element={<VerifyError />} />
+              </Routes>
             </MovieProvider>
           </ClubProvider>
         </NotificationProvider>

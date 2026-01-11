@@ -37,11 +37,15 @@ export const tmdbService = {
    * Search for movies by title
    */
   async searchMovies(query: string): Promise<MovieSearchResult[]> {
-    if (!TMDB_API_KEY) {
+    if (
+      TMDB_API_KEY === undefined ||
+      TMDB_API_KEY === null ||
+      TMDB_API_KEY.trim() === ''
+    ) {
       throw new Error('TMDB_API_KEY is not configured')
     }
 
-    if (!query.trim()) {
+    if (query.trim() === '') {
       return []
     }
 
@@ -60,9 +64,12 @@ export const tmdbService = {
         tmdbId: movie.id,
         title: movie.title,
         posterPath: movie.poster_path,
-        releaseYear: movie.release_date
-          ? new Date(movie.release_date).getFullYear()
-          : null,
+        releaseYear:
+          movie.release_date !== null &&
+          movie.release_date !== undefined &&
+          movie.release_date.trim() !== ''
+            ? new Date(movie.release_date).getFullYear()
+            : null,
         overview: movie.overview,
       }))
     } catch (error) {
@@ -75,7 +82,11 @@ export const tmdbService = {
    * Get detailed information about a specific movie
    */
   async getMovieDetails(tmdbId: number): Promise<MovieDetails> {
-    if (!TMDB_API_KEY) {
+    if (
+      TMDB_API_KEY === undefined ||
+      TMDB_API_KEY === null ||
+      TMDB_API_KEY.trim() === ''
+    ) {
       throw new Error('TMDB_API_KEY is not configured')
     }
 
@@ -94,11 +105,15 @@ export const tmdbService = {
         tmdbId: movie.id,
         title: movie.title,
         posterPath: movie.poster_path,
-        releaseYear: movie.release_date
-          ? new Date(movie.release_date).getFullYear()
-          : null,
+        releaseYear:
+          movie.release_date !== null &&
+          movie.release_date !== undefined &&
+          movie.release_date.trim() !== ''
+            ? new Date(movie.release_date).getFullYear()
+            : null,
         overview: movie.overview,
-        runtime: movie.runtime || null,
+        runtime:
+          movie.runtime !== 0 && movie.runtime !== null ? movie.runtime : null,
         genres: movie.genres.map((g) => g.name),
       }
     } catch (error) {
@@ -112,10 +127,22 @@ export const tmdbService = {
    */
   getPosterUrl(
     posterPath: string | null,
-    size: 'w92' | 'w154' | 'w185' | 'w342' | 'w500' | 'w780' | 'original' = 'w500'
+    size:
+      | 'w92'
+      | 'w154'
+      | 'w185'
+      | 'w342'
+      | 'w500'
+      | 'w780'
+      | 'original' = 'w500'
   ): string | null {
-    if (!posterPath) return null
+    if (
+      posterPath === null ||
+      posterPath === undefined ||
+      posterPath.trim() === ''
+    ) {
+      return null
+    }
     return `https://image.tmdb.org/t/p/${size}${posterPath}`
   },
 }
-

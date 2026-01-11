@@ -13,7 +13,7 @@ interface MovieContextType {
   currentMovieState: CurrentMovieState | null
   loading: boolean
   error: string | null
-  refreshMovieState: (clubId: string) => Promise<void>
+  refreshMovieState: (_clubId: string) => Promise<void>
   clearMovieState: () => void
 }
 
@@ -68,4 +68,3 @@ export function useMovie() {
   }
   return context
 }
-

@@ -5,7 +5,7 @@ import type { MovieSuggestion } from '../types/movie'
 interface TieBreakModalProps {
   isOpen: boolean
   tiedMovies: MovieSuggestion[]
-  onSelect: (movieId: string) => void
+  onSelect: (_movieId: string) => void
   onClose: () => void
 }
 
@@ -46,7 +46,7 @@ const TieBreakModal = ({
         }}
       >
         <h2 style={{ marginTop: 0, color: '#ff9800' }}>
-          🤝 It's a Tie! 🤝
+          🤝 It&apos;s a Tie! 🤝
         </h2>
         <p style={{ color: '#666', marginBottom: '20px' }}>
           The voting resulted in a tie. As the suggester, you get to choose the
@@ -86,8 +86,7 @@ const TieBreakModal = ({
               )}
               <div style={{ flex: 1 }}>
                 <div style={{ fontWeight: 'bold', fontSize: '1.1rem' }}>
-                  {movie.title}{' '}
-                  {movie.releaseYear && `(${movie.releaseYear})`}
+                  {movie.title} {movie.releaseYear && `(${movie.releaseYear})`}
                 </div>
                 {movie.overview && (
                   <div
@@ -166,4 +165,3 @@ const TieBreakModal = ({
 }
 
 export default TieBreakModal
-

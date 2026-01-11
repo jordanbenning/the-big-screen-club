@@ -642,7 +642,9 @@ router.post(
       } catch (error) {
         console.error('Error randomizing rotation:', error)
         const message =
-          error instanceof Error ? error.message : 'Failed to randomize rotation'
+          error instanceof Error
+            ? error.message
+            : 'Failed to randomize rotation'
         res.status(400).json({ error: message })
       }
     })()
@@ -702,7 +704,9 @@ router.post(
       } catch (error) {
         console.error('Error starting voting round:', error)
         const message =
-          error instanceof Error ? error.message : 'Failed to start voting round'
+          error instanceof Error
+            ? error.message
+            : 'Failed to start voting round'
         res.status(400).json({ error: message })
       }
     })()

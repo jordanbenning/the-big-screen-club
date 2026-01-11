@@ -216,7 +216,7 @@ export const movieService = {
       },
     })
 
-    if (!lastCompletedRound) {
+    if (lastCompletedRound === null) {
       // No completed rounds yet, return first person in rotation
       return {
         userId: rotation[0].userId,
@@ -340,9 +340,7 @@ export const movieService = {
     // Check if correct number of movies
     const requiredCount = round.club.settings?.movieSuggestionsCount ?? 4
     if (movies.length !== requiredCount) {
-      throw new Error(
-        `Must suggest exactly ${requiredCount} movies`
-      )
+      throw new Error(`Must suggest exactly ${requiredCount} movies`)
     }
 
     // Check if suggestions already exist
@@ -472,7 +470,7 @@ export const movieService = {
 
     for (const vote of votes) {
       for (const [movieId, rank] of Object.entries(vote.rankings)) {
-        scores[movieId] = (scores[movieId] || 0) + rank
+        scores[movieId] = (scores[movieId] ?? 0) + rank
       }
     }
 
@@ -750,7 +748,10 @@ export const movieService = {
   /**
    * Mark a movie as watched (admin only)
    */
-  async markAsWatched(selectedMovieId: string, adminUserId: string): Promise<void> {
+  async markAsWatched(
+    selectedMovieId: string,
+    adminUserId: string
+  ): Promise<void> {
     const selectedMovie = await prisma.selectedMovie.findUnique({
       where: { id: selectedMovieId },
     })
@@ -840,7 +841,10 @@ export const movieService = {
   /**
    * Get movie history for a club
    */
-  async getMovieHistory(clubId: string, userId: string): Promise<
+  async getMovieHistory(
+    clubId: string,
+    userId: string
+  ): Promise<
     Array<{
       id: string
       movie: {
@@ -1022,7 +1026,10 @@ export const movieService = {
   /**
    * Get current movie state for a club
    */
-  async getCurrentMovieState(clubId: string, userId: string): Promise<{
+  async getCurrentMovieState(
+    clubId: string,
+    userId: string
+  ): Promise<{
     currentMovie?: {
       id: string
       tmdbId: number
@@ -1082,7 +1089,10 @@ export const movieService = {
     let activeVotingRound
     let userHasVoted
     if (activeRound !== null) {
-      activeVotingRound = await this.getVotingRoundDetails(activeRound.id, userId)
+      activeVotingRound = await this.getVotingRoundDetails(
+        activeRound.id,
+        userId
+      )
       userHasVoted = activeVotingRound.votes.some((v) => v.userId === userId)
     }
 
@@ -1090,27 +1100,28 @@ export const movieService = {
     const currentTurn = await this.getCurrentTurn(clubId)
 
     return {
-      currentMovie: upcomingMovie
-        ? {
-            id: upcomingMovie.id,
-            tmdbId: upcomingMovie.movieSuggestion.tmdbId,
-            title: upcomingMovie.movieSuggestion.title,
-            posterPath: upcomingMovie.movieSuggestion.posterPath,
-            releaseYear: upcomingMovie.movieSuggestion.releaseYear,
-            watchByDate: upcomingMovie.watchByDate,
-            status: upcomingMovie.status,
-          }
-        : undefined,
+      currentMovie:
+        upcomingMovie !== null
+          ? {
+              id: upcomingMovie.id,
+              tmdbId: upcomingMovie.movieSuggestion.tmdbId,
+              title: upcomingMovie.movieSuggestion.title,
+              posterPath: upcomingMovie.movieSuggestion.posterPath,
+              releaseYear: upcomingMovie.movieSuggestion.releaseYear,
+              watchByDate: upcomingMovie.watchByDate,
+              status: upcomingMovie.status,
+            }
+          : undefined,
       activeVotingRound,
-      currentTurn: currentTurn
-        ? {
-            userId: currentTurn.userId,
-            username: currentTurn.username,
-            isCurrentUser: currentTurn.userId === userId,
-          }
-        : undefined,
+      currentTurn:
+        currentTurn !== null
+          ? {
+              userId: currentTurn.userId,
+              username: currentTurn.username,
+              isCurrentUser: currentTurn.userId === userId,
+            }
+          : undefined,
       userHasVoted,
     }
   },
 }
-

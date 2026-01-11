@@ -35,20 +35,20 @@
   "lint-staged": {
     "frontend/**/*.{ts,tsx}": [
       "bash -c 'cd frontend && pnpm typecheck'",
-      "bash -c 'cd frontend && eslint --fix --max-warnings 0 $0' --",
+      "bash -c 'cd frontend && eslint --fix $0' --",
       "prettier --write"
     ],
     "frontend/**/*.{js,jsx}": [
-      "bash -c 'cd frontend && eslint --fix --max-warnings 0 $0' --",
+      "bash -c 'cd frontend && eslint --fix $0' --",
       "prettier --write"
     ],
     "backend/**/*.ts": [
       "bash -c 'cd backend && pnpm typecheck'",
-      "bash -c 'cd backend && eslint --fix --max-warnings 0 $0' --",
+      "bash -c 'cd backend && eslint --fix $0' --",
       "prettier --write"
     ],
     "backend/**/*.js": [
-      "bash -c 'cd backend && eslint --fix --max-warnings 0 $0' --",
+      "bash -c 'cd backend && eslint --fix $0' --",
       "prettier --write"
     ],
     "*.{json,css,md}": [

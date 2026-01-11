@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 interface StarRatingProps {
   value?: number
-  onChange?: (rating: number) => void
+  onChange?: (_rating: number) => void
   readonly?: boolean
   size?: 'small' | 'medium' | 'large'
 }
@@ -86,4 +86,3 @@ const StarRating = ({
 }
 
 export default StarRating
-

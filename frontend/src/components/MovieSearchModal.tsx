@@ -6,7 +6,7 @@ import type { MovieSearchResult } from '../types/movie'
 interface MovieSearchModalProps {
   isOpen: boolean
   onClose: () => void
-  onSelect: (movies: MovieSearchResult[]) => void
+  onSelect: (_movies: MovieSearchResult[]) => void
   maxSelections: number
   selectedMovies: MovieSearchResult[]
 }
@@ -177,7 +177,9 @@ const MovieSearchModal = ({
             <h3 style={{ fontSize: '1.1rem', marginBottom: '10px' }}>
               Selected Movies
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+            >
               {selectedMovies.map((movie) => (
                 <div
                   key={movie.tmdbId}
@@ -244,7 +246,9 @@ const MovieSearchModal = ({
             <h3 style={{ fontSize: '1.1rem', marginBottom: '10px' }}>
               Search Results
             </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div
+              style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
+            >
               {searchResults.map((movie) => (
                 <div
                   key={movie.tmdbId}
@@ -362,4 +366,3 @@ const MovieSearchModal = ({
 }
 
 export default MovieSearchModal
-

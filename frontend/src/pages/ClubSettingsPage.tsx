@@ -68,7 +68,8 @@ function ClubSettingsPage() {
         setRotation(rotationData)
       } catch (err) {
         console.error('Error fetching club:', err)
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load club details'
+        const errorMessage =
+          err instanceof Error ? err.message : 'Failed to load club details'
         setError(errorMessage)
       } finally {
         setLoading(false)
@@ -153,7 +154,8 @@ function ClubSettingsPage() {
       console.error('Error updating rotation:', err)
       setAlert({
         type: 'error',
-        message: err instanceof Error ? err.message : 'Failed to update rotation',
+        message:
+          err instanceof Error ? err.message : 'Failed to update rotation',
       })
     }
   }
@@ -172,7 +174,8 @@ function ClubSettingsPage() {
       console.error('Error randomizing rotation:', err)
       setAlert({
         type: 'error',
-        message: err instanceof Error ? err.message : 'Failed to randomize rotation',
+        message:
+          err instanceof Error ? err.message : 'Failed to randomize rotation',
       })
     }
   }
@@ -438,7 +441,7 @@ function ClubSettingsPage() {
           {rotation.length > 0 ? (
             <RotationOrderList
               rotation={rotation}
-              editable={true}
+              editable
               onUpdate={(userIds) => {
                 void handleUpdateRotation(userIds)
               }}
