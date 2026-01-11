@@ -8,12 +8,12 @@ interface AuthContextType {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
-  // eslint-disable-next-line no-unused-vars
+
   login: (user: User) => void
   logout: () => Promise<void>
   clearUser: () => void
   checkAuth: () => Promise<void>
-  // eslint-disable-next-line no-unused-vars
+
   updateUser: (user: User) => void
 }
 

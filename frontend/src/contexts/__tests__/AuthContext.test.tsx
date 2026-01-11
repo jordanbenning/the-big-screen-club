@@ -107,7 +107,6 @@ describe('AuthContext', () => {
   })
 
   it('should set loading state during checkAuth', async () => {
-    // eslint-disable-next-line no-unused-vars
     let resolvePromise!: (value: User) => void
     const promise = new Promise<User>((_resolve) => {
       resolvePromise = _resolve

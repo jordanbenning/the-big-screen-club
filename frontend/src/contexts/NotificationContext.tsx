@@ -16,7 +16,7 @@ interface NotificationContextType {
   unreadCount: number
   isLoading: boolean
   refreshNotifications: () => Promise<void>
-  // eslint-disable-next-line no-unused-vars
+
   markAsRead: (id: string) => Promise<void>
   markAllAsRead: () => Promise<void>
 }

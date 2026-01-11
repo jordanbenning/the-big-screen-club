@@ -6,7 +6,7 @@ import type { ClubFormData } from '../types/club'
 interface CreateClubModalProps {
   onClose: () => void
   onSuccess: () => void
-  // eslint-disable-next-line no-unused-vars
+
   onSubmit: (data: ClubFormData) => Promise<void>
 }
 
