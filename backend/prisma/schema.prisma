@@ -25,6 +25,10 @@ model User {
   sentInvitations     ClubInvitation[]    @relation("InvitationSender")
   receivedInvitations ClubInvitation[]    @relation("InvitationReceiver")
   notifications       Notification[]
+  clubRotations       ClubRotation[]
+  suggestedVotingRounds MovieVotingRound[]
+  movieVotes          MovieVote[]
+  movieRatings        MovieRating[]
 
   @@map("users")
 }
@@ -61,18 +65,39 @@ enum NotificationType {
   @@map("notification_type")
 }
 
+enum VotingRoundStatus {
+  SUGGESTING
+  VOTING
+  REVEALED
+  TIE_BREAKING
+  COMPLETED
+
+  @@map("voting_round_status")
+}
+
+enum SelectedMovieStatus {
+  UPCOMING
+  WATCHED
+
+  @@map("selected_movie_status")
+}
+
 model Club {
-  id                String           @id @default(uuid())
-  name              String           @unique
+  id                String              @id @default(uuid())
+  name              String              @unique
   description       String?
   profilePictureUrl String?
-  isPublic          Boolean          @default(false)
+  isPublic          Boolean             @default(false)
   createdById       String
-  creator           User             @relation("ClubCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  creator           User                @relation("ClubCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
   members           ClubMember[]
   invitations       ClubInvitation[]
+  settings          ClubSettings?
+  rotation          ClubRotation[]
+  votingRounds      MovieVotingRound[]
+  selectedMovies    SelectedMovie[]
 
   @@map("clubs")
 }
@@ -117,6 +142,110 @@ model Notification {
   createdAt         DateTime         @default(now())
 
   @@map("notifications")
+}
+
+model ClubSettings {
+  id                     String @id @default(uuid())
+  clubId                 String @unique
+  club                   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  movieSuggestionsCount  Int    @default(4)
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  @@map("club_settings")
+}
+
+model ClubRotation {
+  id        String   @id @default(uuid())
+  clubId    String
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order     Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([clubId, order])
+  @@unique([clubId, userId])
+  @@map("club_rotation")
+}
+
+model MovieVotingRound {
+  id                String             @id @default(uuid())
+  clubId            String
+  club              Club               @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  suggestedByUserId String
+  suggestedBy       User               @relation(fields: [suggestedByUserId], references: [id], onDelete: Cascade)
+  status            VotingRoundStatus  @default(SUGGESTING)
+  revealedAt        DateTime?
+  selectedMovieId   String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  suggestions       MovieSuggestion[]
+  votes             MovieVote[]
+  selectedMovie     SelectedMovie?
+
+  @@map("movie_voting_rounds")
+}
+
+model MovieSuggestion {
+  id             String           @id @default(uuid())
+  votingRoundId  String
+  votingRound    MovieVotingRound @relation(fields: [votingRoundId], references: [id], onDelete: Cascade)
+  tmdbId         Int
+  title          String
+  posterPath     String?
+  releaseYear    Int?
+  overview       String?
+  createdAt      DateTime         @default(now())
+  selectedMovies SelectedMovie[]
+
+  @@map("movie_suggestions")
+}
+
+model MovieVote {
+  id            String           @id @default(uuid())
+  votingRoundId String
+  votingRound   MovieVotingRound @relation(fields: [votingRoundId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rankings      Json
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  @@unique([votingRoundId, userId])
+  @@map("movie_votes")
+}
+
+model SelectedMovie {
+  id                String               @id @default(uuid())
+  clubId            String
+  club              Club                 @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  votingRoundId     String               @unique
+  votingRound       MovieVotingRound     @relation(fields: [votingRoundId], references: [id], onDelete: Cascade)
+  movieSuggestionId String
+  movieSuggestion   MovieSuggestion      @relation(fields: [movieSuggestionId], references: [id], onDelete: Cascade)
+  watchByDate       DateTime
+  watchedAt         DateTime?
+  selectedAt        DateTime             @default(now())
+  status            SelectedMovieStatus  @default(UPCOMING)
+  ratings           MovieRating[]
+
+  @@map("selected_movies")
+}
+
+model MovieRating {
+  id              String        @id @default(uuid())
+  selectedMovieId String
+  selectedMovie   SelectedMovie @relation(fields: [selectedMovieId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating          Float
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([selectedMovieId, userId])
+  @@map("movie_ratings")
 }
 
 // Note: Session table is managed by connect-pg-simple library

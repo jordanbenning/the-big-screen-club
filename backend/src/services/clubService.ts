@@ -39,7 +39,7 @@ export const clubService = {
       throw new Error('A club with this name already exists')
     }
 
-    // Create the club and add creator as admin in a transaction
+    // Create the club, add creator as admin, initialize settings, and create rotation
     const club = await prisma.club.create({
       data: {
         name: data.name,
@@ -51,6 +51,17 @@ export const clubService = {
           create: {
             userId: data.createdById,
             role: 'ADMIN',
+          },
+        },
+        settings: {
+          create: {
+            movieSuggestionsCount: 4, // Default value
+          },
+        },
+        rotation: {
+          create: {
+            userId: data.createdById,
+            order: 0,
           },
         },
       },
@@ -176,6 +187,7 @@ export const clubService = {
       id: string
       username: string
       email: string
+      profilePictureUrl: string | null
       role: 'ADMIN' | 'MEMBER'
       joinedAt: Date
     }>
@@ -203,6 +215,7 @@ export const clubService = {
             id: true,
             username: true,
             email: true,
+            profilePictureUrl: true,
           },
         },
       },
@@ -215,6 +228,7 @@ export const clubService = {
       id: member.user.id,
       username: member.user.username,
       email: member.user.email,
+      profilePictureUrl: member.user.profilePictureUrl,
       role: member.role,
       joinedAt: member.joinedAt,
     }))
@@ -238,7 +252,7 @@ export const clubService = {
       throw new Error('Not a member of this club')
     }
 
-    // Delete the membership
+    // Delete the membership (this will cascade delete rotation entry)
     await prisma.clubMember.delete({
       where: {
         clubId_userId: {
@@ -258,6 +272,22 @@ export const clubService = {
       await prisma.club.delete({
         where: { id: clubId },
       })
+    } else {
+      // Reorder rotation to fill gaps
+      const rotation = await prisma.clubRotation.findMany({
+        where: { clubId },
+        orderBy: { order: 'asc' },
+      })
+
+      // Update order to be sequential
+      await prisma.$transaction(
+        rotation.map((r, index) =>
+          prisma.clubRotation.update({
+            where: { id: r.id },
+            data: { order: index },
+          })
+        )
+      )
     }
   },
 
@@ -413,7 +443,15 @@ export const clubService = {
       throw new Error('Club has reached maximum member limit (12)')
     }
 
-    // Accept the invitation: add user to club and update invitation status
+    // Get the current max order in rotation
+    const maxOrderResult = await prisma.clubRotation.findFirst({
+      where: { clubId: invitation.clubId },
+      orderBy: { order: 'desc' },
+      select: { order: true },
+    })
+    const nextOrder = maxOrderResult !== null ? maxOrderResult.order + 1 : 0
+
+    // Accept the invitation: add user to club, update invitation status, and add to rotation
     await prisma.$transaction([
       prisma.clubMember.create({
         data: {
@@ -425,6 +463,13 @@ export const clubService = {
       prisma.clubInvitation.update({
         where: { id: invitationId },
         data: { status: 'ACCEPTED' },
+      }),
+      prisma.clubRotation.create({
+        data: {
+          clubId: invitation.clubId,
+          userId,
+          order: nextOrder,
+        },
       }),
     ])
 
@@ -524,7 +569,7 @@ export const clubService = {
       throw new Error('User is not a member of this club')
     }
 
-    // Remove the member
+    // Remove the member (this will cascade delete rotation entry)
     await prisma.clubMember.delete({
       where: {
         clubId_userId: {
@@ -544,6 +589,22 @@ export const clubService = {
       await prisma.club.delete({
         where: { id: clubId },
       })
+    } else {
+      // Reorder rotation to fill gaps
+      const rotation = await prisma.clubRotation.findMany({
+        where: { clubId },
+        orderBy: { order: 'asc' },
+      })
+
+      // Update order to be sequential
+      await prisma.$transaction(
+        rotation.map((r, index) =>
+          prisma.clubRotation.update({
+            where: { id: r.id },
+            data: { order: index },
+          })
+        )
+      )
     }
   },
 

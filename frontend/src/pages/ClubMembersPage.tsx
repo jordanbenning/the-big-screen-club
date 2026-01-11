@@ -355,56 +355,100 @@ function ClubMembersPage() {
             }}
           >
             {/* Member Info */}
-            <div style={{ flex: 1, minWidth: '200px' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '10px',
-                  marginBottom: '5px',
-                  flexWrap: 'wrap',
-                }}
-              >
-                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>
-                  {member.username}
-                </h3>
-                <span
+            <div
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
+              }}
+            >
+              {/* Profile Picture */}
+              {member.profilePictureUrl !== null ? (
+                <img
+                  src={`${API_URL}${member.profilePictureUrl}`}
+                  alt={member.username}
                   style={{
-                    fontSize: '0.75rem',
-                    backgroundColor:
-                      member.role === 'ADMIN' ? '#007bff' : '#6c757d',
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    flexShrink: 0,
+                  }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    backgroundColor: '#6c757d',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     color: 'white',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
+                    fontSize: '1.5rem',
                     fontWeight: 'bold',
+                    flexShrink: 0,
                   }}
                 >
-                  {member.role}
-                </span>
+                  {member.username.charAt(0).toUpperCase()}
+                </div>
+              )}
+
+              {/* Member Details */}
+              <div style={{ flex: 1, minWidth: '150px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    marginBottom: '5px',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <h3 style={{ margin: 0, fontSize: '1.25rem' }}>
+                    {member.username}
+                  </h3>
+                  <span
+                    style={{
+                      fontSize: '0.75rem',
+                      backgroundColor:
+                        member.role === 'ADMIN' ? '#007bff' : '#6c757d',
+                      color: 'white',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    {member.role}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    margin: '5px 0 0 0',
+                    color: '#666',
+                    fontSize: '0.9rem',
+                  }}
+                >
+                  {member.email}
+                </p>
+                <p
+                  style={{
+                    margin: '5px 0 0 0',
+                    color: '#999',
+                    fontSize: '0.85rem',
+                  }}
+                >
+                  Joined{' '}
+                  {new Date(member.joinedAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                  })}
+                </p>
               </div>
-              <p
-                style={{
-                  margin: '5px 0 0 0',
-                  color: '#666',
-                  fontSize: '0.9rem',
-                }}
-              >
-                {member.email}
-              </p>
-              <p
-                style={{
-                  margin: '5px 0 0 0',
-                  color: '#999',
-                  fontSize: '0.85rem',
-                }}
-              >
-                Joined{' '}
-                {new Date(member.joinedAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </p>
             </div>
 
             {/* Admin Actions */}

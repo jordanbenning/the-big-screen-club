@@ -17,6 +17,7 @@ export interface ClubMember {
   id: string
   username: string
   email: string
+  profilePictureUrl: string | null
   role: ClubRole
   joinedAt: string
 }

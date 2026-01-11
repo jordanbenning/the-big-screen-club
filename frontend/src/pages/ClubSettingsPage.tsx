@@ -3,9 +3,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { clubApi } from '../api/clubApi'
+import { movieApi } from '../api/movieApi'
 import InlineAlert from '../components/InlineAlert'
+import RotationOrderList from '../components/RotationOrderList'
 import { useClubs } from '../contexts/ClubContext'
 import type { Club, ClubFormData } from '../types/club'
+import type { ClubRotationMember } from '../types/movie'
 
 const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:3000'
 
@@ -29,6 +32,9 @@ function ClubSettingsPage() {
   const [profilePicturePreview, setProfilePicturePreview] = useState<
     string | null
   >(null)
+
+  // Movie settings
+  const [rotation, setRotation] = useState<ClubRotationMember[]>([])
 
   useEffect(() => {
     if (id === undefined) {
@@ -56,9 +62,14 @@ function ClubSettingsPage() {
         if (data.profilePictureUrl !== null) {
           setProfilePicturePreview(`${API_URL}${data.profilePictureUrl}`)
         }
+
+        // Fetch rotation
+        const rotationData = await movieApi.getRotation(id)
+        setRotation(rotationData)
       } catch (err) {
         console.error('Error fetching club:', err)
-        setError('Failed to load club details')
+        const errorMessage = err instanceof Error ? err.message : 'Failed to load club details'
+        setError(errorMessage)
       } finally {
         setLoading(false)
       }
@@ -126,6 +137,44 @@ function ClubSettingsPage() {
         setSaveLoading(false)
       }
     })()
+  }
+
+  const handleUpdateRotation = async (userIds: string[]) => {
+    if (!id) return
+    try {
+      await movieApi.updateRotation(id, userIds)
+      const rotationData = await movieApi.getRotation(id)
+      setRotation(rotationData)
+      setAlert({
+        type: 'success',
+        message: 'Rotation order updated successfully!',
+      })
+    } catch (err) {
+      console.error('Error updating rotation:', err)
+      setAlert({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Failed to update rotation',
+      })
+    }
+  }
+
+  const handleRandomizeRotation = async () => {
+    if (!id) return
+    try {
+      await movieApi.randomizeRotation(id)
+      const rotationData = await movieApi.getRotation(id)
+      setRotation(rotationData)
+      setAlert({
+        type: 'success',
+        message: 'Rotation randomized successfully!',
+      })
+    } catch (err) {
+      console.error('Error randomizing rotation:', err)
+      setAlert({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Failed to randomize rotation',
+      })
+    }
   }
 
   if (loading) {
@@ -373,6 +422,33 @@ function ClubSettingsPage() {
           >
             Public clubs can be discovered by other users
           </small>
+        </div>
+
+        {/* Movie Rotation Section */}
+        <div
+          style={{
+            marginBottom: '25px',
+            paddingTop: '25px',
+            borderTop: '1px solid #dee2e6',
+          }}
+        >
+          <h3 style={{ marginTop: 0, marginBottom: '15px' }}>
+            Movie Suggester Rotation
+          </h3>
+          {rotation.length > 0 ? (
+            <RotationOrderList
+              rotation={rotation}
+              editable={true}
+              onUpdate={(userIds) => {
+                void handleUpdateRotation(userIds)
+              }}
+              onRandomize={() => {
+                void handleRandomizeRotation()
+              }}
+            />
+          ) : (
+            <p style={{ color: '#666' }}>Loading rotation...</p>
+          )}
         </div>
 
         {/* Alert Message */}

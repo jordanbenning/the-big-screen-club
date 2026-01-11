@@ -5,11 +5,13 @@ import ProtectedRoute from './components/ProtectedRoute'
 import PublicOnlyRoute from './components/PublicOnlyRoute'
 import { AuthProvider } from './contexts/AuthContext'
 import { ClubProvider } from './contexts/ClubContext'
+import { MovieProvider } from './contexts/MovieContext'
 import { NotificationProvider } from './contexts/NotificationContext'
 import ClubMembersPage from './pages/ClubMembersPage'
 import ClubPage from './pages/ClubPage'
 import ClubSettingsPage from './pages/ClubSettingsPage'
 import Dashboard from './pages/Dashboard'
+import MovieHistoryPage from './pages/MovieHistoryPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
@@ -26,8 +28,9 @@ function App() {
       <AuthProvider>
         <NotificationProvider>
           <ClubProvider>
-            <Header />
-            <Routes>
+            <MovieProvider>
+              <Header />
+              <Routes>
               <Route
                 path="/"
                 element={
@@ -116,9 +119,18 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/clubs/:id/movies/history"
+                element={
+                  <ProtectedRoute>
+                    <MovieHistoryPage />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/verify-success" element={<VerifySuccess />} />
               <Route path="/verify-error" element={<VerifyError />} />
             </Routes>
+            </MovieProvider>
           </ClubProvider>
         </NotificationProvider>
       </AuthProvider>

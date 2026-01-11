@@ -10,6 +10,7 @@ import session from 'express-session'
 import './types/session'
 import authRoutes from './routes/authRoutes'
 import clubRoutes from './routes/clubRoutes'
+import movieRoutes from './routes/movieRoutes'
 import notificationRoutes from './routes/notificationRoutes'
 import userRoutes from './routes/userRoutes'
 
@@ -64,6 +65,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/clubs', clubRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/notifications', notificationRoutes)
+app.use('/api/movies', movieRoutes)
 
 // Graceful shutdown
 process.on('SIGINT', () => {

@@ -6,6 +6,7 @@ import multer from 'multer'
 
 import { requireAuth } from '../middleware/authMiddleware'
 import { clubService } from '../services/clubService'
+import { movieService } from '../services/movieService'
 
 const router = express.Router()
 
@@ -534,6 +535,175 @@ router.post(
         }
         console.error('Error rejecting invitation:', error)
         res.status(500).json({ error: 'Failed to reject invitation' })
+      }
+    })()
+  }
+)
+
+/**
+ * GET /api/clubs/:id/movies/history - Get movie history for a club
+ */
+router.get(
+  '/:id/movies/history',
+  requireAuth,
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const userId = req.session.userId
+        const { id } = req.params
+
+        if (userId === undefined) {
+          res.status(401).json({ error: 'Not authenticated' })
+          return
+        }
+
+        const history = await movieService.getMovieHistory(id, userId)
+        res.json(history)
+      } catch (error) {
+        if (error instanceof Error) {
+          if (error.message === 'Not a member of this club') {
+            res.status(403).json({ error: error.message })
+            return
+          }
+        }
+        console.error('Error getting movie history:', error)
+        res.status(500).json({ error: 'Failed to get movie history' })
+      }
+    })()
+  }
+)
+
+/**
+ * GET /api/clubs/:id/rotation - Get rotation order for a club
+ */
+router.get('/:id/rotation', requireAuth, (req: Request, res: Response) => {
+  void (async () => {
+    try {
+      const { id } = req.params
+      const rotation = await movieService.getRotation(id)
+      res.json(rotation)
+    } catch (error) {
+      console.error('Error getting rotation:', error)
+      res.status(500).json({ error: 'Failed to get rotation' })
+    }
+  })()
+})
+
+/**
+ * PUT /api/clubs/:id/rotation - Update rotation order (admin only)
+ */
+router.put('/:id/rotation', requireAuth, (req: Request, res: Response) => {
+  void (async () => {
+    try {
+      const { id } = req.params
+      const { userIds } = req.body as { userIds: string[] }
+      const userId = req.session.userId
+
+      if (userId === undefined) {
+        res.status(401).json({ error: 'Not authenticated' })
+        return
+      }
+
+      if (!Array.isArray(userIds)) {
+        res.status(400).json({ error: 'userIds must be an array' })
+        return
+      }
+
+      await movieService.updateRotation(id, userId, userIds)
+      res.json({ message: 'Rotation updated successfully' })
+    } catch (error) {
+      console.error('Error updating rotation:', error)
+      const message =
+        error instanceof Error ? error.message : 'Failed to update rotation'
+      res.status(400).json({ error: message })
+    }
+  })()
+})
+
+/**
+ * POST /api/clubs/:id/rotation/randomize - Randomize rotation order (admin only)
+ */
+router.post(
+  '/:id/rotation/randomize',
+  requireAuth,
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const { id } = req.params
+        const userId = req.session.userId
+
+        if (userId === undefined) {
+          res.status(401).json({ error: 'Not authenticated' })
+          return
+        }
+
+        await movieService.randomizeRotation(id, userId)
+        res.json({ message: 'Rotation randomized successfully' })
+      } catch (error) {
+        console.error('Error randomizing rotation:', error)
+        const message =
+          error instanceof Error ? error.message : 'Failed to randomize rotation'
+        res.status(400).json({ error: message })
+      }
+    })()
+  }
+)
+
+/**
+ * GET /api/clubs/:id/movies/current - Get current movie state for a club
+ */
+router.get(
+  '/:id/movies/current',
+  requireAuth,
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const { id } = req.params
+        const userId = req.session.userId
+
+        if (userId === undefined) {
+          res.status(401).json({ error: 'Not authenticated' })
+          return
+        }
+
+        const state = await movieService.getCurrentMovieState(id, userId)
+        res.json(state)
+      } catch (error) {
+        console.error('Error getting current movie state:', error)
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Failed to get current movie state'
+        res.status(400).json({ error: message })
+      }
+    })()
+  }
+)
+
+/**
+ * POST /api/clubs/:id/movies/rounds - Start a new voting round
+ */
+router.post(
+  '/:id/movies/rounds',
+  requireAuth,
+  (req: Request, res: Response) => {
+    void (async () => {
+      try {
+        const { id } = req.params
+        const userId = req.session.userId
+
+        if (userId === undefined) {
+          res.status(401).json({ error: 'Not authenticated' })
+          return
+        }
+
+        const roundId = await movieService.startVotingRound(id, userId)
+        res.json({ roundId })
+      } catch (error) {
+        console.error('Error starting voting round:', error)
+        const message =
+          error instanceof Error ? error.message : 'Failed to start voting round'
+        res.status(400).json({ error: message })
       }
     })()
   }
