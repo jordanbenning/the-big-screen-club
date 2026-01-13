@@ -7,6 +7,43 @@ interface StarRatingProps {
   size?: 'small' | 'medium' | 'large'
 }
 
+// SVG star path
+const STAR_PATH =
+  'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z'
+
+interface StarProps {
+  fillPercent: number // 0, 50, or 100
+  starIndex: number
+}
+
+const Star = ({ fillPercent, starIndex }: StarProps) => {
+  // Use unique clipPath ID per star to avoid conflicts
+  const clipId = `halfClip-${starIndex}`
+
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      style={{ width: '100%', height: '100%', display: 'block' }}
+    >
+      <defs>
+        <clipPath id={clipId}>
+          <rect x="0" y="0" width="12" height="24" />
+        </clipPath>
+      </defs>
+      {/* Empty star background (outline) */}
+      <path d={STAR_PATH} fill="#e0e0e0" />
+      {/* Filled portion */}
+      {fillPercent > 0 && (
+        <path
+          d={STAR_PATH}
+          fill="#ffc107"
+          clipPath={fillPercent === 50 ? `url(#${clipId})` : undefined}
+        />
+      )}
+    </svg>
+  )
+}
+
 const StarRating = ({
   value = 0,
   onChange,
@@ -22,9 +59,7 @@ const StarRating = ({
   }
 
   const starSize = sizeMap[size]
-
-  // Generate array of 10 half-stars (0.5, 1.0, 1.5, ..., 5.0)
-  const halfStars = Array.from({ length: 10 }, (_, i) => (i + 1) * 0.5)
+  const displayValue = hover || value
 
   const handleClick = (rating: number) => {
     if (!readonly && onChange) {
@@ -44,36 +79,71 @@ const StarRating = ({
     }
   }
 
-  const displayValue = hover || value
+  // Calculate fill percentage for each star (0, 50, or 100)
+  const getStarFillPercent = (starIndex: number): number => {
+    const starValue = starIndex + 1
+    if (displayValue >= starValue) {
+      return 100
+    } else if (displayValue >= starValue - 0.5) {
+      return 50
+    }
+    return 0
+  }
 
   return (
     <div
       style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '4px',
+        gap: '2px',
       }}
     >
-      {halfStars.map((rating) => {
-        const isHalfStar = rating % 1 !== 0
-        const isFilled = displayValue >= rating
+      {[0, 1, 2, 3, 4].map((starIndex) => {
+        const fillPercent = getStarFillPercent(starIndex)
 
         return (
-          <span
-            key={rating}
-            onClick={() => handleClick(rating)}
-            onMouseEnter={() => handleMouseEnter(rating)}
-            onMouseLeave={handleMouseLeave}
+          <div
+            key={starIndex}
             style={{
-              cursor: readonly ? 'default' : 'pointer',
-              fontSize: starSize,
-              color: isFilled ? '#ffc107' : '#e0e0e0',
-              userSelect: 'none',
               position: 'relative',
+              width: starSize,
+              height: starSize,
+              cursor: readonly ? 'default' : 'pointer',
             }}
+            onMouseLeave={handleMouseLeave}
           >
-            {isHalfStar ? '⯨' : '★'}
-          </span>
+            <Star fillPercent={fillPercent} starIndex={starIndex} />
+
+            {/* Interactive click/hover zones for half-star precision */}
+            {!readonly && (
+              <>
+                {/* Left half - for x.5 rating */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '50%',
+                    height: '100%',
+                  }}
+                  onClick={() => handleClick(starIndex + 0.5)}
+                  onMouseEnter={() => handleMouseEnter(starIndex + 0.5)}
+                />
+                {/* Right half - for whole rating */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    right: 0,
+                    width: '50%',
+                    height: '100%',
+                  }}
+                  onClick={() => handleClick(starIndex + 1)}
+                  onMouseEnter={() => handleMouseEnter(starIndex + 1)}
+                />
+              </>
+            )}
+          </div>
         )
       })}
       {!readonly && (
